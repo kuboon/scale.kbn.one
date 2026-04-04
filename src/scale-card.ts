@@ -33,13 +33,10 @@ function formatExponent(exp: number, meta: ScaleMeta): string {
 }
 
 function humanYearsAgo(exp: number): string {
-  if (exp <= 3) return `${10 ** exp}年前`;
-  if (exp === 4) return '1万年前';
-  if (exp === 5) return '10万年前';
-  if (exp === 6) return '100万年前';
-  if (exp === 7) return '1,000万年前';
-  if (exp === 8) return '1億年前';
-  if (exp === 9) return '10億年前';
-  if (exp === 10) return '100億年前';
+  const years = 10 ** exp;
+  if (years < 1) return '現在';
+  if (years < 1e4) return `${Math.round(years).toLocaleString()}年前`;
+  if (years < 1e8) return `${(years / 1e4).toFixed(years < 1e5 ? 1 : 0)}万年前`;
+  if (years < 1e12) return `${(years / 1e8).toFixed(years < 1e9 ? 1 : 0)}億年前`;
   return `10<sup>${exp}</sup>年前`;
 }
