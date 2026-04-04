@@ -1,7 +1,7 @@
 {
   "name": "scale-kbn-one",
-  "private": true,
   "version": "1.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,9 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@modyfi/vite-plugin-yaml": "^1.1.1",
-    "typescript": "^6.0.2",
-    "vite": "^8.0.3",
+    "js-yaml": "^4.1.1",
     "vite-plus": "^0.1.15"
   }
 }

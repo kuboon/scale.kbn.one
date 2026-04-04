@@ -1,5 +1,5 @@
-import { ScaleEntry, ScaleMeta } from './types';
-import { exponentToY } from './scroll-engine';
+import { ScaleEntry, ScaleMeta } from "./types.ts";
+import { exponentToY } from "./scroll-engine.ts";
 
 const CARD_HEIGHT = 140; // approximate card height in px
 
@@ -8,8 +8,8 @@ export function createScaleCard(
   meta: ScaleMeta,
   indexInGroup: number,
 ): HTMLElement {
-  const card = document.createElement('div');
-  card.className = 'scale-card';
+  const card = document.createElement("div");
+  card.className = "scale-card";
   const baseY = exponentToY(entry.exponent, meta);
   card.style.top = `${baseY + indexInGroup * CARD_HEIGHT}px`;
 

@@ -1,4 +1,4 @@
-import { ScaleMeta } from './types';
+import { ScaleMeta } from "./types.ts";
 
 export function totalHeight(meta: ScaleMeta): number {
   const range = meta.maxExponent - meta.minExponent;
@@ -7,7 +7,7 @@ export function totalHeight(meta: ScaleMeta): number {
 
 /** Returns true if the scale should be displayed in reverse (top=max, bottom=min) */
 function isReversed(meta: ScaleMeta): boolean {
-  return meta.id === 'history';
+  return meta.id === "history";
 }
 
 export function scrollYToExponent(scrollY: number, meta: ScaleMeta): number {

@@ -1,8 +1,8 @@
-import { ScaleData } from './types';
-import { totalHeight, exponentToY } from './scroll-engine';
-import { createScaleCard } from './scale-card';
-import { createIndicator, updateIndicator, destroyIndicator } from './scale-indicator';
-import { superscript } from './format';
+import { ScaleData } from "./types.ts";
+import { totalHeight, exponentToY } from "./scroll-engine.ts";
+import { createScaleCard } from "./scale-card.ts";
+import { createIndicator, updateIndicator, destroyIndicator } from "./scale-indicator.ts";
+import { superscript } from "./format.ts";
 
 let scrollHandler: (() => void) | null = null;
 let observer: IntersectionObserver | null = null;
@@ -21,11 +21,11 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     </div>
   `;
 
-  const track = container.querySelector('.explorer-track')!;
+  const track = container.querySelector(".explorer-track")!;
 
   // Create scale line
-  const line = document.createElement('div');
-  line.className = 'explorer-line';
+  const line = document.createElement("div");
+  line.className = "explorer-line";
   track.appendChild(line);
 
   // Create tick ruler & ×10 step markers
@@ -33,11 +33,11 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
   const maxTick = Math.floor(data.meta.maxExponent);
   for (let exp = minTick; exp <= maxTick; exp++) {
     const y = exponentToY(exp, data.meta);
-    const tick = document.createElement('div');
-    tick.className = 'tick-mark';
+    const tick = document.createElement("div");
+    tick.className = "tick-mark";
     tick.style.top = `${y}px`;
 
-    const sign = exp >= 0 ? '+' : '';
+    const sign = exp >= 0 ? "+" : "";
     tick.innerHTML = `<span class="tick-label">10${superscript(sign + exp)}</span>`;
     track.appendChild(tick);
 
@@ -45,10 +45,10 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     if (exp < maxTick) {
       const nextY = exponentToY(exp + 1, data.meta);
       const midY = (y + nextY) / 2;
-      const marker = document.createElement('div');
-      marker.className = 'step-marker';
+      const marker = document.createElement("div");
+      marker.className = "step-marker";
       marker.style.top = `${midY}px`;
-      marker.textContent = '×10';
+      marker.textContent = "×10";
       track.appendChild(marker);
     }
   }
@@ -58,7 +58,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     (entries) => {
       for (const e of entries) {
         if (e.isIntersecting) {
-          e.target.classList.add('visible');
+          e.target.classList.add("visible");
           observer?.unobserve(e.target);
         }
       }
@@ -78,11 +78,11 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
 
   // Create indicator
   const indicator = createIndicator(data.meta);
-  container.querySelector('.explorer')!.appendChild(indicator);
+  container.querySelector(".explorer")!.appendChild(indicator);
 
   // Scroll listener
   scrollHandler = () => updateIndicator(data.meta);
-  window.addEventListener('scroll', scrollHandler, { passive: true });
+  window.addEventListener("scroll", scrollHandler, { passive: true });
   updateIndicator(data.meta);
 
   // Scroll to top
@@ -91,7 +91,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
 
 export function destroyExplorer() {
   if (scrollHandler) {
-    window.removeEventListener('scroll', scrollHandler);
+    window.removeEventListener("scroll", scrollHandler);
     scrollHandler = null;
   }
   if (observer) {
