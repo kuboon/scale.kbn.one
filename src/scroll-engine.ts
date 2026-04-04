@@ -1,10 +1,8 @@
 import { ScaleMeta } from './types';
 
-const PIXELS_PER_EXPONENT = 300;
-
 export function totalHeight(meta: ScaleMeta): number {
   const range = meta.maxExponent - meta.minExponent;
-  return range * PIXELS_PER_EXPONENT + window.innerHeight;
+  return range * meta.pixelsPerExponent + window.innerHeight;
 }
 
 /** Returns true if the scale should be displayed in reverse (top=max, bottom=min) */

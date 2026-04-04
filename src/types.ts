@@ -6,6 +6,7 @@ export interface ScaleMeta {
   unitSymbol: string;
   minExponent: number;
   maxExponent: number;
+  pixelsPerExponent: number;
 }
 
 export interface ScaleEntry {
