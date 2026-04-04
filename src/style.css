@@ -1,0 +1,298 @@
+:root {
+  --bg-hue: 270;
+  --bg-color: hsl(var(--bg-hue), 30%, 8%);
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a0a0;
+  --text-accent: hsl(var(--bg-hue), 80%, 70%);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-overflow-scrolling: touch;
+  transition: background 0.3s ease;
+}
+
+/* ============ Landing ============ */
+
+.landing {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+
+.landing-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #a78bfa, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.landing-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 3rem;
+}
+
+.landing-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 360px;
+}
+
+.landing-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1.5rem;
+  border-radius: 1rem;
+  text-decoration: none;
+  color: var(--text-primary);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.landing-card:active {
+  transform: scale(0.97);
+}
+
+.landing-card--time {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.1));
+}
+
+.landing-card--length {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.1));
+}
+
+.landing-card-icon {
+  font-size: 2.5rem;
+}
+
+.landing-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.landing-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* ============ Explorer ============ */
+
+.explorer {
+  position: relative;
+}
+
+.explorer-back {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--card-border);
+  transition: color 0.2s;
+}
+
+.explorer-back:active {
+  color: var(--text-primary);
+}
+
+.explorer-header {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 4rem 1.5rem 2rem;
+}
+
+.explorer-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-accent);
+}
+
+.explorer-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.explorer-track {
+  position: relative;
+  width: 100%;
+}
+
+.explorer-line {
+  position: absolute;
+  left: 1.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgba(167, 139, 250, 0.4),
+    rgba(56, 189, 248, 0.4),
+    rgba(16, 185, 129, 0.4)
+  );
+}
+
+/* ============ Scale Card ============ */
+
+.scale-card {
+  position: absolute;
+  left: 2.5rem;
+  right: 1rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  transform: translateY(0);
+
+  /* animation initial state */
+  opacity: 0;
+  translate: 0 30px;
+  transition: opacity 0.5s ease, translate 0.5s ease;
+}
+
+.scale-card.visible {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.scale-card::before {
+  content: '';
+  position: absolute;
+  left: -1.15rem;
+  top: 1.5rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-accent);
+  box-shadow: 0 0 8px var(--text-accent);
+}
+
+.scale-card-exponent {
+  font-size: 0.8rem;
+  color: var(--text-accent);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  font-family: 'Courier New', monospace;
+}
+
+.scale-card-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.1rem;
+}
+
+.scale-card-name-en {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.scale-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ============ Indicator HUD ============ */
+
+.scale-indicator {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 1rem;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  white-space: nowrap;
+}
+
+.scale-indicator-exp {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  color: var(--text-accent);
+}
+
+.scale-indicator-readable {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* ============ Responsive ============ */
+
+@media (min-width: 768px) {
+  .landing-title {
+    font-size: 3.5rem;
+  }
+
+  .landing-cards {
+    flex-direction: row;
+    max-width: 640px;
+  }
+
+  .landing-card {
+    flex: 1;
+  }
+
+  .scale-card {
+    max-width: 500px;
+  }
+
+  .explorer-line {
+    left: 2.5rem;
+  }
+
+  .scale-card {
+    left: 3.5rem;
+  }
+
+  .scale-card::before {
+    left: -1.15rem;
+  }
+}

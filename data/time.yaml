@@ -1,0 +1,149 @@
+meta:
+  id: time
+  title: 時間のスケール
+  subtitle: プランク時間から宇宙の年齢まで
+  unit: 秒
+  unitSymbol: s
+  minExponent: -44
+  maxExponent: 18
+
+entries:
+  - exponent: -44
+    name: プランク時間
+    nameEn: Planck Time
+    description: 物理学で意味を持つ最小の時間単位（5.4×10⁻⁴⁴秒）
+
+  - exponent: -24
+    name: ユカワ時間
+    nameEn: Yukawa Time
+    description: 原子核内の強い力が伝わる時間スケール
+
+  - exponent: -21
+    name: ゼプト秒
+    nameEn: Zeptosecond
+    description: 光が原子核を横切る時間
+
+  - exponent: -18
+    name: アト秒
+    nameEn: Attosecond
+    description: 電子が原子内を移動する時間スケール
+
+  - exponent: -15
+    name: フェムト秒
+    nameEn: Femtosecond
+    description: 超高速レーザーパルスの長さ。分子振動の周期
+
+  - exponent: -12
+    name: ピコ秒
+    nameEn: Picosecond
+    description: 光が0.3mmを進む時間。電子回路の最速スイッチング
+
+  - exponent: -9
+    name: ナノ秒
+    nameEn: Nanosecond
+    description: CPUの1クロックサイクル（約1GHz）。光が30cmを進む
+
+  - exponent: -6
+    name: マイクロ秒
+    nameEn: Microsecond
+    description: カメラのストロボ発光時間。音が0.3mmを進む
+
+  - exponent: -3
+    name: ミリ秒
+    nameEn: Millisecond
+    description: ハエの羽ばたき1回。人間の瞬きは約300ミリ秒
+
+  - exponent: -1
+    name: 0.1秒
+    nameEn: Tenth of a Second
+    description: 人間の反応時間の限界。意識的に知覚できる最短時間
+
+  - exponent: 0
+    name: 1秒
+    nameEn: One Second
+    description: 心臓の鼓動1回。セシウム原子の91億回の振動で定義
+
+  - exponent: 1
+    name: 10秒
+    nameEn: Ten Seconds
+    description: エレベーターの待ち時間。深呼吸を数回する時間
+
+  - exponent: 2
+    name: 数分
+    nameEn: Minutes
+    description: カップ麺が出来る時間（3分）。1曲の演奏時間
+
+  - exponent: 3
+    name: 約17分
+    nameEn: About 17 Minutes
+    description: 学校の授業の半分。短い昼寝の時間
+
+  - exponent: 4
+    name: 約3時間
+    nameEn: About 3 Hours
+    description: 映画1本の長さ。マラソンの世界記録タイム
+
+  - exponent: 5
+    name: 約1日
+    nameEn: About a Day
+    description: 地球の自転周期（86,400秒）。人間の体内時計の1サイクル
+
+  - exponent: 6
+    name: 約12日
+    nameEn: About 12 Days
+    description: 短期の海外旅行。月の満ち欠けの半周期
+
+  - exponent: 7
+    name: 約4ヶ月
+    nameEn: About 4 Months
+    description: 学期の長さ。季節1つ分
+
+  - exponent: 8
+    name: 約3年
+    nameEn: About 3 Years
+    description: 大学の在学期間。幼児が言葉を習得する時間
+
+  - exponent: 9
+    name: 約32年
+    nameEn: About 32 Years
+    description: 人間の約半生。1世代の長さ
+
+  - exponent: 10
+    name: 約317年
+    nameEn: About 317 Years
+    description: 江戸時代の長さ。近代文明の歴史
+
+  - exponent: 11
+    name: 約3,200年
+    nameEn: About 3,200 Years
+    description: 古代エジプト文明からの歴史。ピラミッド建設からの時間
+
+  - exponent: 12
+    name: 約32,000年
+    nameEn: About 32,000 Years
+    description: ラスコー洞窟壁画の時代。最後の氷河期
+
+  - exponent: 13
+    name: 約32万年
+    nameEn: About 320,000 Years
+    description: ホモ・サピエンスの誕生からの時間
+
+  - exponent: 14
+    name: 約320万年
+    nameEn: About 3.2 Million Years
+    description: アウストラロピテクスの時代。人類の進化の始まり
+
+  - exponent: 15
+    name: 約3,200万年
+    nameEn: About 32 Million Years
+    description: 霊長類の分岐。ヒマラヤ山脈の形成開始
+
+  - exponent: 16
+    name: 約3.2億年
+    nameEn: About 320 Million Years
+    description: 恐竜出現以前の古生代。超大陸パンゲアの形成期
+
+  - exponent: 17
+    name: 宇宙の年齢
+    nameEn: Age of the Universe
+    description: ビッグバンからの経過時間（約138億年 = 4.4×10¹⁷秒）
