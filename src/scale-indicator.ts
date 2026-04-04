@@ -1,16 +1,25 @@
 import { ScaleMeta } from './types';
 import { scrollYToExponent, hueForExponent } from './scroll-engine';
+import { superscript } from './format';
 
 let indicatorEl: HTMLElement | null = null;
+let flashEl: HTMLElement | null = null;
 let rafId = 0;
+let prevIntExponent: number | null = null;
 
 export function createIndicator(meta: ScaleMeta): HTMLElement {
   indicatorEl = document.createElement('div');
   indicatorEl.className = 'scale-indicator';
   indicatorEl.innerHTML = `
+    <span class="boundary-flash"></span>
     <span class="scale-indicator-exp"></span>
     <span class="scale-indicator-readable"></span>
   `;
+  flashEl = indicatorEl.querySelector('.boundary-flash')!;
+  flashEl.addEventListener('animationend', () => {
+    flashEl!.classList.remove('boundary-flash--active');
+  });
+  prevIntExponent = null;
   return indicatorEl;
 }
 
@@ -31,21 +40,24 @@ export function updateIndicator(meta: ScaleMeta) {
     readableEl.textContent = humanReadable(rounded, meta.id);
 
     document.documentElement.style.setProperty('--bg-hue', String(hue));
+
+    // Boundary crossing flash
+    if (flashEl && prevIntExponent !== null && rounded !== prevIntExponent) {
+      const arrow = rounded > prevIntExponent ? '\u2191' : '\u2193';
+      flashEl.textContent = `\u00d710${arrow}`;
+      flashEl.classList.remove('boundary-flash--active');
+      void flashEl.offsetWidth; // force reflow to restart animation
+      flashEl.classList.add('boundary-flash--active');
+    }
+    prevIntExponent = rounded;
   });
 }
 
 export function destroyIndicator() {
   cancelAnimationFrame(rafId);
   indicatorEl = null;
-}
-
-function superscript(s: string): string {
-  const map: Record<string, string> = {
-    '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3',
-    '4': '\u2074', '5': '\u2075', '6': '\u2076', '7': '\u2077',
-    '8': '\u2078', '9': '\u2079', '-': '\u207B', '+': '\u207A',
-  };
-  return s.split('').map(c => map[c] ?? c).join('');
+  flashEl = null;
+  prevIntExponent = null;
 }
 
 function humanReadable(exp: number, scaleId: string): string {
