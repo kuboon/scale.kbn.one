@@ -12,164 +12,197 @@ entries:
   - exponent: -35
     name: プランク長
     nameEn: Planck Length
-    description: 物理学で意味を持つ最小の長さ（1.6×10⁻³⁵m）
+    label: 1.6×10⁻³⁵ m
+    description: 物理学で意味を持つ最小の長さ
 
   - exponent: -18
     name: クォークの大きさ
     nameEn: Quark Scale
+    label: 10⁻¹⁸ m
     description: クォークの実験的上限サイズ。素粒子物理の世界
 
   - exponent: -15
     name: 陽子の直径
     nameEn: Proton Diameter
-    description: 原子核を構成する陽子の大きさ（約1フェムトメートル）
+    label: 約1 fm
+    description: 原子核を構成する陽子の大きさ
 
   - exponent: -12
     name: 水素原子核間距離
     nameEn: Hydrogen Bond Length
+    label: 約1 pm
     description: 分子内の原子間の結合距離のスケール
 
   - exponent: -10
     name: 原子
     nameEn: Atom
-    description: 水素原子の直径（約1オングストローム）。物質の基本単位
+    label: 約1 Å
+    description: 水素原子の直径。物質の基本単位
 
   - exponent: -9
     name: DNA幅
     nameEn: DNA Width
-    description: DNA二重らせんの直径（約2nm）。ナノテクノロジーの領域
+    label: 約2 nm
+    description: DNA二重らせんの直径。ナノテクノロジーの領域
 
   - exponent: -8
     name: ウイルス
     nameEn: Virus
-    description: インフルエンザウイルスの大きさ（約100nm）
+    label: 約100 nm
+    description: インフルエンザウイルスの大きさ
 
   - exponent: -7
     name: 可視光の波長
     nameEn: Visible Light Wavelength
-    description: 人間の目に見える光の波長（380〜780nm）
+    label: 380〜780 nm
+    description: 人間の目に見える光の波長
 
   - exponent: -6
     name: 細菌
     nameEn: Bacteria
-    description: 大腸菌の大きさ（約2μm）。光学顕微鏡で見える限界
+    label: 約2 μm
+    description: 大腸菌の大きさ。光学顕微鏡で見える限界
 
   - exponent: -5
     name: 赤血球
     nameEn: Red Blood Cell
-    description: 赤血球の直径（約7μm）。細胞のスケール
+    label: 約7 μm
+    description: 赤血球の直径。細胞のスケール
 
   - exponent: -4
     name: 髪の毛の太さ
     nameEn: Human Hair Width
-    description: 人間の髪の毛の直径（約70μm）。肉眼で見える限界付近
+    label: 約70 μm
+    description: 人間の髪の毛の直径。肉眼で見える限界付近
 
   - exponent: -3
     name: アリ
     nameEn: Ant
-    description: 小さなアリの体長（約1mm）。砂粒の大きさ
+    label: 約1 mm
+    description: 小さなアリの体長。砂粒の大きさ
 
   - exponent: -2
     name: 1円玉
     nameEn: One Yen Coin
-    description: 1円玉の直径（2cm）。指先の幅
+    label: 2 cm
+    description: 1円玉の直径。指先の幅
 
   - exponent: -1
     name: 手のひら
     nameEn: Human Palm
-    description: 手のひらの幅（約10cm）。りんご1個
+    label: 約10 cm
+    description: 手のひらの幅。りんご1個
 
   - exponent: 0
     name: 人間の腕の長さ
     nameEn: Human Arm Length
-    description: 人間の腕の長さ（約1m）。ギターの全長
+    label: 約1 m
+    description: 人間の腕の長さ。ギターの全長
 
   - exponent: 1
     name: バス
     nameEn: Bus
-    description: 路線バスの全長（約10m）。クジラの体長
+    label: 約10 m
+    description: 路線バスの全長。クジラの体長
 
   - exponent: 2
     name: サッカー場
     nameEn: Soccer Field
-    description: サッカーフィールドの長さ（約100m）
+    label: 約100 m
+    description: サッカーフィールドの長さ
 
   - exponent: 3
     name: 山
     nameEn: Mountain
-    description: 富士山の標高（3,776m）。深海の深さ
+    label: 3,776 m
+    description: 富士山の標高。深海の深さ
 
   - exponent: 4
     name: 都市
     nameEn: City
-    description: 東京の山手線一周の距離（約34km）
+    label: 約34 km
+    description: 東京の山手線一周の距離
 
   - exponent: 5
     name: 日本列島の幅
     nameEn: Width of Japan
-    description: 本州の幅（約200〜300km）
+    label: 約200〜300 km
+    description: 本州の幅
 
   - exponent: 6
     name: 地球の半径
     nameEn: Earth's Radius
-    description: 地球の半径（約6,371km）。月までの距離の1/60
+    label: 約6,371 km
+    description: 地球の半径。月までの距離の1/60
 
   - exponent: 7
     name: 地球の直径
     nameEn: Earth's Diameter
-    description: 地球の直径（約12,742km）
+    label: 約12,742 km
+    description: 地球の直径
 
   - exponent: 8
     name: 地球-月間距離
     nameEn: Earth-Moon Distance
-    description: 月までの平均距離（約38万km）。光が1.3秒で届く
+    label: 約38万 km
+    description: 月までの平均距離。光が1.3秒で届く
 
   - exponent: 9
     name: 太陽の直径
     nameEn: Sun's Diameter
-    description: 太陽の直径（約139万km）。木星軌道の1/1000
+    label: 約139万 km
+    description: 太陽の直径。木星軌道の1/1000
 
   - exponent: 11
     name: 地球-太陽間距離
     nameEn: Earth-Sun Distance
-    description: 1天文単位（約1.5億km）。光が8分で届く
+    label: 約1.5億 km
+    description: 1天文単位。光が8分で届く
 
   - exponent: 12
     name: 太陽系内部
     nameEn: Inner Solar System
-    description: 木星の公転軌道の直径（約15億km）
+    label: 約15億 km
+    description: 木星の公転軌道の直径
 
   - exponent: 13
     name: 太陽系
     nameEn: Solar System
-    description: 海王星の公転軌道の直径（約90億km）。光が14時間
+    label: 約90億 km
+    description: 海王星の公転軌道の直径。光が14時間
 
   - exponent: 16
     name: 1光年
     nameEn: Light Year
-    description: 光が1年間に進む距離（9.5×10¹⁵m）。最も近い恒星は4.2光年
+    label: 9.5×10¹⁵ m
+    description: 光が1年間に進む距離。最も近い恒星は4.2光年
 
   - exponent: 18
     name: 星間雲
     nameEn: Interstellar Cloud
-    description: オリオン星雲の大きさ（約24光年）
+    label: 約24光年
+    description: オリオン星雲の大きさ
 
   - exponent: 21
     name: 天の川銀河
     nameEn: Milky Way Galaxy
-    description: 天の川銀河の直径（約10万光年 = 10²¹m）
+    label: 約10万光年
+    description: 天の川銀河の直径
 
   - exponent: 23
     name: 銀河群
     nameEn: Galaxy Group
-    description: 局部銀河群の大きさ（約1000万光年）
+    label: 約1,000万光年
+    description: 局部銀河群の大きさ
 
   - exponent: 25
     name: 銀河フィラメント
     nameEn: Galaxy Filament
+    label: 約10億光年
     description: 宇宙の大規模構造。銀河が糸状に連なる
 
   - exponent: 27
     name: 観測可能な宇宙
     nameEn: Observable Universe
-    description: 観測可能な宇宙の直径（約930億光年 = 8.8×10²⁶m）
+    label: 約930億光年
+    description: 観測可能な宇宙の直径
