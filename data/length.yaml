@@ -6,6 +6,7 @@ meta:
   unitSymbol: m
   minExponent: -35
   maxExponent: 27
+  pixelsPerExponent: 300
 
 entries:
   - exponent: -35

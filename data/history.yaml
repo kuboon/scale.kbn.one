@@ -6,6 +6,7 @@ meta:
   unitSymbol: 年前
   minExponent: 0
   maxExponent: 10
+  pixelsPerExponent: 3000
 
 entries:
   - exponent: 10
@@ -193,6 +194,16 @@ entries:
     nameEn: Roman Empire at Its Peak
     description: 約2,000年前。地中海世界を支配した巨大帝国
 
+  - exponent: 3
+    name: 唐
+    nameEn: Tang Dynasty
+    description: 約1,400年前。中国の黄金時代、文化・技術・交易が東アジア全域に影響（618-907年）
+
+  - exponent: 3
+    name: 鎌倉時代
+    nameEn: Kamakura Period
+    description: 約800年前。日本初の武家政権、武士の時代の幕開け（1185-1333年）
+
   - exponent: 2
     name: 活版印刷の発明
     nameEn: Printing Press
@@ -207,6 +218,11 @@ entries:
     name: 電気の実用化
     nameEn: Practical Electricity
     description: 約140年前。エジソンの電球、現代文明の基盤（1880年代）
+
+  - exponent: 2
+    name: 明治維新
+    nameEn: Meiji Restoration
+    description: 約158年前。日本の近代化の始まり、封建制度から近代国家へ（1868年）
 
   - exponent: 1
     name: 飛行機の発明
