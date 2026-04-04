@@ -54,17 +54,11 @@ function humanReadable(exp: number, scaleId: string): string {
 }
 
 function humanHistory(exp: number): string {
-  if (exp === 0) return '現在';
-  if (exp === 1) return '約10年前';
-  if (exp === 2) return '約100年前';
-  if (exp === 3) return '約1,000年前';
-  if (exp === 4) return '約1万年前';
-  if (exp === 5) return '約10万年前';
-  if (exp === 6) return '約100万年前';
-  if (exp === 7) return '約1,000万年前';
-  if (exp === 8) return '約1億年前';
-  if (exp === 9) return '約10億年前';
-  if (exp === 10) return '約100億年前';
+  if (exp <= 0) return '現在';
+  const years = 10 ** exp;
+  if (years < 1e4) return `約${Math.round(years).toLocaleString()}年前`;
+  if (years < 1e8) return `約${(years / 1e4).toFixed(years < 1e5 ? 1 : 0)}万年前`;
+  if (years < 1e12) return `約${(years / 1e8).toFixed(years < 1e9 ? 1 : 0)}億年前`;
   return '';
 }
 
