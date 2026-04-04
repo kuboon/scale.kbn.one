@@ -13,6 +13,7 @@ export interface ScaleEntry {
   exponent: number;
   name: string;
   nameEn: string;
+  label: string;
   description: string;
 }
 
