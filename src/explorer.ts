@@ -40,10 +40,14 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     { threshold: 0.15 },
   );
 
+  // Count items per exponent group for stacking offset
+  const groupCount = new Map<number, number>();
   for (const entry of data.entries) {
-    const card = createScaleCard(entry, data.meta);
+    const count = groupCount.get(entry.exponent) ?? 0;
+    const card = createScaleCard(entry, data.meta, count);
     track.appendChild(card);
     observer.observe(card);
+    groupCount.set(entry.exponent, count + 1);
   }
 
   // Create indicator

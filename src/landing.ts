@@ -4,10 +4,10 @@ export function renderLanding(container: HTMLElement) {
       <h1 class="landing-title">スケール探検</h1>
       <p class="landing-subtitle">スクロールで巡る、宇宙のものさし</p>
       <div class="landing-cards">
-        <a href="#time" class="landing-card landing-card--time">
-          <span class="landing-card-icon">⏳</span>
-          <span class="landing-card-title">時間のスケール</span>
-          <span class="landing-card-desc">プランク時間から宇宙の年齢まで</span>
+        <a href="#history" class="landing-card landing-card--history">
+          <span class="landing-card-icon">🌌</span>
+          <span class="landing-card-title">宇宙史のスケール</span>
+          <span class="landing-card-desc">ビッグバンから現代まで</span>
         </a>
         <a href="#length" class="landing-card landing-card--length">
           <span class="landing-card-icon">📏</span>

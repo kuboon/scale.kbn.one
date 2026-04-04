@@ -84,7 +84,7 @@ body {
   transform: scale(0.97);
 }
 
-.landing-card--time {
+.landing-card--history {
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.1));
 }
 

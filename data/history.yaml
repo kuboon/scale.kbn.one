@@ -1,0 +1,239 @@
+meta:
+  id: history
+  title: 宇宙史のスケール
+  subtitle: ビッグバンから現代まで
+  unit: 年前
+  unitSymbol: 年前
+  minExponent: 0
+  maxExponent: 10
+
+entries:
+  - exponent: 10
+    name: ビッグバン
+    nameEn: Big Bang
+    description: 約138億年前。宇宙の誕生、時間と空間の始まり
+
+  - exponent: 10
+    name: 最初の星の誕生
+    nameEn: First Stars
+    description: 約130億年前。宇宙で最初の恒星が水素ガスから誕生
+
+  - exponent: 10
+    name: 天の川銀河の形成
+    nameEn: Milky Way Formation
+    description: 約130億年前。私たちの銀河が形を成し始める
+
+  - exponent: 9
+    name: 太陽系の誕生
+    nameEn: Birth of the Solar System
+    description: 約46億年前。ガス雲の収縮から太陽と惑星が形成
+
+  - exponent: 9
+    name: 地球の誕生
+    nameEn: Birth of the Earth
+    description: 約45億年前。微惑星の衝突・合体により地球が形成
+
+  - exponent: 9
+    name: 月の形成
+    nameEn: Formation of the Moon
+    description: 約45億年前。巨大衝突（ジャイアント・インパクト）で月が誕生
+
+  - exponent: 9
+    name: 最初の海
+    nameEn: First Oceans
+    description: 約44億年前。地球が冷え、水蒸気が凝結して海洋が形成
+
+  - exponent: 9
+    name: 最初の生命
+    nameEn: First Life
+    description: 約40億年前。海底の熱水噴出孔付近で原始的な微生物が誕生
+
+  - exponent: 9
+    name: 光合成の始まり
+    nameEn: First Photosynthesis
+    description: 約35億年前。シアノバクテリアが光合成を開始
+
+  - exponent: 9
+    name: 大酸化イベント
+    nameEn: Great Oxidation Event
+    description: 約24億年前。大気中の酸素濃度が急上昇、地球環境が一変
+
+  - exponent: 9
+    name: 真核生物の出現
+    nameEn: First Eukaryotes
+    description: 約20億年前。核を持つ細胞の誕生。複雑な生命への第一歩
+
+  - exponent: 9
+    name: 多細胞生物の出現
+    nameEn: First Multicellular Life
+    description: 約10億年前。単細胞から多細胞への進化
+
+  - exponent: 8
+    name: カンブリア爆発
+    nameEn: Cambrian Explosion
+    description: 約5.4億年前。多様な動物門が一斉に出現した生命の大爆発
+
+  - exponent: 8
+    name: 魚類の出現
+    nameEn: First Fish
+    description: 約5億年前。脊椎動物の祖先が海に登場
+
+  - exponent: 8
+    name: 植物の上陸
+    nameEn: Plants Colonize Land
+    description: 約4.7億年前。植物が初めて陸地に進出
+
+  - exponent: 8
+    name: 昆虫の出現
+    nameEn: First Insects
+    description: 約4億年前。陸上で最初の昆虫が進化
+
+  - exponent: 8
+    name: 両生類の上陸
+    nameEn: First Amphibians
+    description: 約3.7億年前。脊椎動物が初めて陸に上がる
+
+  - exponent: 8
+    name: 恐竜の時代の始まり
+    nameEn: Age of Dinosaurs Begins
+    description: 約2.3億年前。三畳紀に恐竜が出現
+
+  - exponent: 8
+    name: 哺乳類の出現
+    nameEn: First Mammals
+    description: 約2億年前。小型の哺乳類が恐竜と共存を開始
+
+  - exponent: 8
+    name: 鳥類の出現
+    nameEn: First Birds
+    description: 約1.5億年前。始祖鳥など恐竜から鳥類が進化
+
+  - exponent: 8
+    name: 被子植物（花）の出現
+    nameEn: First Flowering Plants
+    description: 約1.3億年前。花を咲かせる植物が登場し生態系を変革
+
+  - exponent: 7
+    name: 恐竜の絶滅
+    nameEn: Dinosaur Extinction
+    description: 約6,600万年前。小惑星衝突による大量絶滅（K-Pg境界）
+
+  - exponent: 7
+    name: 霊長類の出現
+    nameEn: First Primates
+    description: 約5,500万年前。恐竜絶滅後、霊長類が多様化
+
+  - exponent: 7
+    name: ヒマラヤ山脈の形成開始
+    nameEn: Himalayas Begin Forming
+    description: 約5,000万年前。インドプレートがユーラシアに衝突
+
+  - exponent: 7
+    name: 類人猿の出現
+    nameEn: First Apes
+    description: 約2,500万年前。サルから類人猿への分岐
+
+  - exponent: 6
+    name: 人類とチンパンジーの分岐
+    nameEn: Human-Chimpanzee Split
+    description: 約700万年前。人類の系統がチンパンジーと分かれる
+
+  - exponent: 6
+    name: 直立二足歩行
+    nameEn: Bipedalism
+    description: 約400万年前。アウストラロピテクスが二足歩行を確立
+
+  - exponent: 6
+    name: 石器の使用開始
+    nameEn: First Stone Tools
+    description: 約260万年前。最古の石器（オルドワン石器）の制作
+
+  - exponent: 6
+    name: ホモ・エレクトスの出現
+    nameEn: Homo Erectus
+    description: 約190万年前。火の使用を始めた人類の祖先
+
+  - exponent: 5
+    name: ホモ・サピエンスの誕生
+    nameEn: Homo Sapiens
+    description: 約30万年前。現生人類がアフリカで誕生
+
+  - exponent: 5
+    name: 言語の発達
+    nameEn: Development of Language
+    description: 約10万年前。複雑な言語コミュニケーションの始まり
+
+  - exponent: 4
+    name: 洞窟壁画
+    nameEn: Cave Paintings
+    description: 約4万年前。ラスコーやアルタミラの芸術的表現
+
+  - exponent: 4
+    name: 農業革命
+    nameEn: Agricultural Revolution
+    description: 約1万年前。作物の栽培と家畜の飼育が始まり定住生活へ
+
+  - exponent: 3
+    name: 文字の発明
+    nameEn: Invention of Writing
+    description: 約5,000年前。メソポタミアの楔形文字、歴史時代の始まり
+
+  - exponent: 3
+    name: ピラミッド建設
+    nameEn: Great Pyramids Built
+    description: 約4,500年前。古代エジプト文明の象徴
+
+  - exponent: 3
+    name: 古代ギリシャ哲学
+    nameEn: Ancient Greek Philosophy
+    description: 約2,500年前。ソクラテス、プラトン、アリストテレス
+
+  - exponent: 3
+    name: ローマ帝国の最盛期
+    nameEn: Roman Empire at Its Peak
+    description: 約2,000年前。地中海世界を支配した巨大帝国
+
+  - exponent: 2
+    name: 活版印刷の発明
+    nameEn: Printing Press
+    description: 約580年前。グーテンベルクの印刷革命（1440年頃）
+
+  - exponent: 2
+    name: 産業革命
+    nameEn: Industrial Revolution
+    description: 約250年前。蒸気機関が社会を根本から変革（1770年代）
+
+  - exponent: 2
+    name: 電気の実用化
+    nameEn: Practical Electricity
+    description: 約140年前。エジソンの電球、現代文明の基盤（1880年代）
+
+  - exponent: 1
+    name: 飛行機の発明
+    nameEn: First Airplane
+    description: 約120年前。ライト兄弟の初飛行（1903年）
+
+  - exponent: 1
+    name: コンピュータの発明
+    nameEn: First Computers
+    description: 約80年前。ENIACなど最初の電子計算機（1940年代）
+
+  - exponent: 1
+    name: 月面着陸
+    nameEn: Moon Landing
+    description: 約55年前。アポロ11号が人類初の月面着陸（1969年）
+
+  - exponent: 1
+    name: インターネットの普及
+    nameEn: Rise of the Internet
+    description: 約30年前。World Wide Webが一般に普及（1990年代）
+
+  - exponent: 0
+    name: スマートフォンの時代
+    nameEn: Smartphone Era
+    description: 約15年前。iPhone登場以降、世界がモバイルに（2007年〜）
+
+  - exponent: 0
+    name: AI革命
+    nameEn: AI Revolution
+    description: 現在。大規模言語モデルが社会を変え始めている
