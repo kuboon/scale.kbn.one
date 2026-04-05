@@ -114,23 +114,18 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     const usableH = vpHeight - TOP_PAD - BOTTOM_PAD;
     const vp = getViewport(currentExp);
 
-    // Update cards with dynamic stacking to prevent overlap
-    let prevBottomY = -Infinity;
+    // Update cards
     for (const c of cards) {
       const frac = valueToFraction(c.value, vp, meta);
 
       if (frac >= -0.3 && frac <= 1.3) {
-        let y = TOP_PAD + frac * usableH;
-        if (y < prevBottomY) {
-          y = prevBottomY;
-        }
+        const y = TOP_PAD + frac * usableH;
         c.el.style.display = "";
         c.el.style.transform = `translateY(${y}px)`;
         // Fade at edges
         const edge = frac < 0 ? -frac / 0.3 : frac > 1 ? (frac - 1) / 0.3 : 0;
         c.el.style.opacity = String(Math.max(0, 1 - edge));
         if (!c.el.classList.contains("visible")) c.el.classList.add("visible");
-        prevBottomY = y + CARD_HEIGHT;
       } else {
         c.el.style.display = "none";
       }
@@ -146,7 +141,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
           const y = TOP_PAD + frac * usableH;
           tel.style.display = "";
           tel.style.transform = `translateY(${y}px)`;
-          tel.querySelector(".tick-label")!.textContent = formatTickLabel(ticks[i], meta);
+          tel.querySelector(".tick-label")!.textContent = formatTickLabel(ticks[i]);
         } else {
           tel.style.display = "none";
         }
@@ -182,20 +177,8 @@ export function destroyExplorer() {
   destroyIndicator();
 }
 
-function formatTickLabel(value: number, meta: ScaleMeta): string {
-  if (meta.id === "history") {
-    if (value < 1) return "現在";
-    if (value < 100) return `${Math.round(value)}年前`;
-    if (value < 1e4) return `${Math.round(value).toLocaleString()}年前`;
-    if (value < 1e8) return `${(value / 1e4).toFixed(0)}万年前`;
-    return `${(value / 1e8).toFixed(value < 1e10 ? 1 : 0)}億年前`;
-  }
-  // Length scale
-  const exp = Math.log10(Math.abs(value) || 1);
-  if (exp < -6) return `${value.toExponential(1)} m`;
-  if (exp < -3) return `${(value * 1e6).toFixed(0)} \u00B5m`;
-  if (exp < 0) return `${(value * 1e3).toFixed(0)} mm`;
-  if (exp < 3) return `${value.toFixed(0)} m`;
-  if (exp < 6) return `${(value / 1e3).toFixed(0)} km`;
-  return `${value.toExponential(1)} m`;
+function formatTickLabel(value: number): string {
+  const exp = Math.floor(Math.log10(value));
+  const coeff = Math.round(value / 10 ** exp);
+  return `${coeff}`;
 }
