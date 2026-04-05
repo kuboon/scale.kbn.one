@@ -42,6 +42,42 @@ export function toJapaneseLabel(value: number, exponent: number, unitSymbol: str
   return `約${formatted}${space}${unitSymbol}`;
 }
 
+/**
+ * Human-readable label for a given 10^exp value in the specified scale.
+ * Used by the indicator HUD.
+ */
+export function humanReadable(exp: number, scaleId: string): string {
+  if (scaleId === "history") return humanReadableHistory(exp);
+  return humanReadableLength(exp);
+}
+
+function humanReadableHistory(exp: number): string {
+  if (exp <= 0) return "現在";
+  return `約${formatJapaneseNumber(1, exp)}年前`;
+}
+
+function humanReadableLength(exp: number): string {
+  const units: [number, string][] = [
+    [16, "光年"],
+    [3, "km"],
+    [0, "m"],
+    [-2, "cm"],
+    [-3, "mm"],
+    [-6, "\u00B5m"],
+    [-9, "nm"],
+    [-12, "pm"],
+    [-15, "fm"],
+  ];
+  for (const [base, unit] of units) {
+    if (exp >= base) {
+      const shifted = exp - base;
+      if (shifted === 0) return `1 ${unit}`;
+      return `${formatJapaneseNumber(1, shifted)} ${unit}`;
+    }
+  }
+  return "";
+}
+
 function formatSmallNumber(n: number): string {
   if (n >= 1000 && n % 1000 === 0) {
     return `${n / 1000}千`;
@@ -50,8 +86,6 @@ function formatSmallNumber(n: number): string {
 }
 
 function formatJapaneseNumber(value: number, exponent: number): string {
-  // Convert to a string representation to avoid floating-point errors
-  // e.g., value=2.3, exponent=8 → "230000000" → 2億3000万
   const valStr = value.toString();
   const dotIdx = valStr.indexOf(".");
   let digits: string;
@@ -64,17 +98,12 @@ function formatJapaneseNumber(value: number, exponent: number): string {
     digits = valStr.replace(".", "");
     totalExp = exponent - decimals;
   }
-  // digits is an integer string, totalExp is the power of 10 to multiply
-  // Pad zeros on the right if totalExp > 0
   if (totalExp > 0) {
     digits = digits + "0".repeat(totalExp);
   } else if (totalExp < 0) {
-    // Number is fractional or small — fallback
     const num = value * 10 ** exponent;
     return num < 1 ? String(num) : Math.round(num).toLocaleString();
   }
-  // digits is now the full integer as a string (no fp involved)
-  // Remove leading zeros
   digits = digits.replace(/^0+/, "") || "0";
 
   const len = digits.length;
@@ -97,12 +126,10 @@ function formatJapaneseNumber(value: number, exponent: number): string {
     }
   }
 
-  // Remaining < 万
   if (pos < len) {
     const rest = parseInt(digits.slice(pos), 10);
     if (rest > 0) {
       if (result) {
-        // Append sub-万 remainder (e.g., 4千)
         result += formatSmallNumber(rest);
       } else {
         result = rest.toLocaleString();
