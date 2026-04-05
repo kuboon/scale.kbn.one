@@ -7,7 +7,8 @@
     "dev": "vp dev",
     "build": "vp build",
     "preview": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "test": "vp test run"
   },
   "devDependencies": {
     "js-yaml": "^4.1.1",
