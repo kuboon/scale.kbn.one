@@ -34,21 +34,19 @@ export function hueForExponent(exponent: number, meta: ScaleMeta): number {
   return 270 - progress * 240;
 }
 
-/** Generate nice tick values for a linear range */
+/** Generate tick values at 2, 4, 6, 8 × 10^n within the visible range */
 export function computeTicks(rangeMin: number, rangeMax: number): number[] {
-  const span = rangeMax - rangeMin;
-  if (span <= 0) return [];
-  const rawStep = span / 6;
-  const mag = 10 ** Math.floor(Math.log10(rawStep));
-  const r = rawStep / mag;
-  const nice = r <= 1.5 ? 1 : r <= 3.5 ? 2 : r <= 7.5 ? 5 : 10;
-  const step = nice * mag;
-
+  const expMin = Math.floor(Math.log10(Math.max(rangeMin, 1e-35)));
+  const expMax = Math.ceil(Math.log10(Math.max(rangeMax, 1e-35)));
+  const multipliers = [2, 4, 6, 8];
   const ticks: number[] = [];
-  let v = Math.ceil(rangeMin / step) * step;
-  while (v <= rangeMax) {
-    ticks.push(v);
-    v += step;
+  for (let e = expMin - 1; e <= expMax; e++) {
+    for (const m of multipliers) {
+      const v = m * 10 ** e;
+      if (v >= rangeMin && v <= rangeMax) {
+        ticks.push(v);
+      }
+    }
   }
   return ticks;
 }

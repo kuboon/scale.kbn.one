@@ -1,4 +1,4 @@
-import { ScaleData, ScaleMeta } from "./types.ts";
+import { ScaleData } from "./types.ts";
 import { getViewport, valueToFraction, hueForExponent, computeTicks } from "./scroll-engine.ts";
 import { createIndicator, updateIndicator, destroyIndicator } from "./scale-indicator.ts";
 import { toJapaneseLabel } from "./format.ts";
@@ -11,7 +11,6 @@ interface CardInfo {
 }
 
 const MAX_TICKS = 20;
-const CARD_HEIGHT = 140;
 const TOP_PAD = 120;
 const BOTTOM_PAD = 200;
 
@@ -27,10 +26,6 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
   container.innerHTML = `
     <div class="explorer">
       <a href="#" class="explorer-back">\u2190 戻る</a>
-      <div class="explorer-header">
-        <h1 class="explorer-title">${meta.title}</h1>
-        <p class="explorer-subtitle">${meta.subtitle}</p>
-      </div>
       <div class="explorer-viewport">
         <div class="explorer-line"></div>
       </div>
@@ -57,9 +52,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     el.className = "scale-card";
     const label = toJapaneseLabel(entry.value, entry.exponent, meta.unitSymbol);
     el.innerHTML = `
-      <div class="scale-card-exponent">${label}</div>
-      <div class="scale-card-name">${entry.name}</div>
-      <div class="scale-card-name-en">${entry.nameEn}</div>
+      <div><span class="scale-card-exponent">${label}</span> <span class="scale-card-name">${entry.name}</span></div>
       <div class="scale-card-desc">${entry.description}</div>
     `;
     viewport.appendChild(el);
@@ -114,23 +107,18 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     const usableH = vpHeight - TOP_PAD - BOTTOM_PAD;
     const vp = getViewport(currentExp);
 
-    // Update cards with dynamic stacking to prevent overlap
-    let prevBottomY = -Infinity;
+    // Update cards
     for (const c of cards) {
       const frac = valueToFraction(c.value, vp, meta);
 
       if (frac >= -0.3 && frac <= 1.3) {
-        let y = TOP_PAD + frac * usableH;
-        if (y < prevBottomY) {
-          y = prevBottomY;
-        }
+        const y = TOP_PAD + frac * usableH;
         c.el.style.display = "";
         c.el.style.transform = `translateY(${y}px)`;
         // Fade at edges
         const edge = frac < 0 ? -frac / 0.3 : frac > 1 ? (frac - 1) / 0.3 : 0;
         c.el.style.opacity = String(Math.max(0, 1 - edge));
         if (!c.el.classList.contains("visible")) c.el.classList.add("visible");
-        prevBottomY = y + CARD_HEIGHT;
       } else {
         c.el.style.display = "none";
       }
@@ -146,7 +134,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
           const y = TOP_PAD + frac * usableH;
           tel.style.display = "";
           tel.style.transform = `translateY(${y}px)`;
-          tel.querySelector(".tick-label")!.textContent = formatTickLabel(ticks[i], meta);
+          tel.querySelector(".tick-label")!.textContent = formatTickLabel(ticks[i]);
         } else {
           tel.style.display = "none";
         }
@@ -182,20 +170,8 @@ export function destroyExplorer() {
   destroyIndicator();
 }
 
-function formatTickLabel(value: number, meta: ScaleMeta): string {
-  if (meta.id === "history") {
-    if (value < 1) return "現在";
-    if (value < 100) return `${Math.round(value)}年前`;
-    if (value < 1e4) return `${Math.round(value).toLocaleString()}年前`;
-    if (value < 1e8) return `${(value / 1e4).toFixed(0)}万年前`;
-    return `${(value / 1e8).toFixed(value < 1e10 ? 1 : 0)}億年前`;
-  }
-  // Length scale
-  const exp = Math.log10(Math.abs(value) || 1);
-  if (exp < -6) return `${value.toExponential(1)} m`;
-  if (exp < -3) return `${(value * 1e6).toFixed(0)} \u00B5m`;
-  if (exp < 0) return `${(value * 1e3).toFixed(0)} mm`;
-  if (exp < 3) return `${value.toFixed(0)} m`;
-  if (exp < 6) return `${(value / 1e3).toFixed(0)} km`;
-  return `${value.toExponential(1)} m`;
+function formatTickLabel(value: number): string {
+  const exp = Math.floor(Math.log10(value));
+  const coeff = Math.round(value / 10 ** exp);
+  return `${coeff}`;
 }

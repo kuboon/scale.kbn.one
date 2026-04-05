@@ -5,8 +5,7 @@ meta:
   unit: 年前
   unitSymbol: 年前
   minExponent: 0
-  maxExponent: 10
-  pixelsPerExponent: 3000
+  maxExponent: 9.8
 
 entries:
   - exponent: 10
@@ -15,41 +14,11 @@ entries:
     nameEn: Big Bang
     description: 宇宙の誕生、時間と空間の始まり
 
-  - exponent: 10
-    value: 1.3
-    name: 最初の星の誕生
-    nameEn: First Stars
-    description: 宇宙で最初の恒星が水素ガスから誕生
-
-  - exponent: 10
-    value: 1.3
-    name: 天の川銀河の形成
-    nameEn: Milky Way Formation
-    description: 私たちの銀河が形を成し始める
-
   - exponent: 9
-    value: 4.6
-    name: 太陽系の誕生
+    value: 4.5
+    name: 太陽系、地球、月の誕生
     nameEn: Birth of the Solar System
     description: ガス雲の収縮から太陽と惑星が形成
-
-  - exponent: 9
-    value: 4.5
-    name: 地球の誕生
-    nameEn: Birth of the Earth
-    description: 微惑星の衝突・合体により地球が形成
-
-  - exponent: 9
-    value: 4.5
-    name: 月の形成
-    nameEn: Formation of the Moon
-    description: 巨大衝突（ジャイアント・インパクト）で月が誕生
-
-  - exponent: 9
-    value: 4.4
-    name: 最初の海
-    nameEn: First Oceans
-    description: 地球が冷え、水蒸気が凝結して海洋が形成
 
   - exponent: 9
     value: 4

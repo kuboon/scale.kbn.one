@@ -5,8 +5,7 @@ meta:
   unit: メートル
   unitSymbol: m
   minExponent: -35
-  maxExponent: 27
-  pixelsPerExponent: 300
+  maxExponent: 27.9
 
 entries:
   - exponent: 27

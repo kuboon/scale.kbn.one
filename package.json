@@ -7,11 +7,12 @@
     "dev": "vp dev",
     "build": "vp build",
     "preview": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "test": "vp test run"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
     "js-yaml": "^4.1.1",
-    "vite-plus": "^0.1",
-    "wrangler": "^4.78.0"
+    "vite-plus": "^0.1"
   }
 }
