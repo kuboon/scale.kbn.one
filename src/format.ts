@@ -37,7 +37,7 @@ export function toJapaneseLabel(value: number, exponent: number, unitSymbol: str
     return `約${vStr}10${superscript(String(e))} ${unitSymbol}`;
   }
 
-  const formatted = formatJapaneseNumber(num);
+  const formatted = formatJapaneseNumber(value, exponent);
   const space = /^[a-zA-Z]/.test(unitSymbol) ? " " : "";
   return `約${formatted}${space}${unitSymbol}`;
 }
@@ -49,31 +49,66 @@ function formatSmallNumber(n: number): string {
   return n.toLocaleString();
 }
 
-function formatJapaneseNumber(num: number): string {
-  num = Math.round(num);
-  if (num < 10000) return num.toLocaleString();
+function formatJapaneseNumber(value: number, exponent: number): string {
+  // Convert to a string representation to avoid floating-point errors
+  // e.g., value=2.3, exponent=8 → "230000000" → 2億3000万
+  const valStr = value.toString();
+  const dotIdx = valStr.indexOf(".");
+  let digits: string;
+  let totalExp: number;
+  if (dotIdx === -1) {
+    digits = valStr;
+    totalExp = exponent;
+  } else {
+    const decimals = valStr.length - dotIdx - 1;
+    digits = valStr.replace(".", "");
+    totalExp = exponent - decimals;
+  }
+  // digits is an integer string, totalExp is the power of 10 to multiply
+  // Pad zeros on the right if totalExp > 0
+  if (totalExp > 0) {
+    digits = digits + "0".repeat(totalExp);
+  } else if (totalExp < 0) {
+    // Number is fractional or small — fallback
+    const num = value * 10 ** exponent;
+    return num < 1 ? String(num) : Math.round(num).toLocaleString();
+  }
+  // digits is now the full integer as a string (no fp involved)
+  // Remove leading zeros
+  digits = digits.replace(/^0+/, "") || "0";
 
+  const len = digits.length;
   const groups: [number, string][] = [
-    [1e12, "兆"],
-    [1e8, "億"],
-    [1e4, "万"],
+    [13, "兆"],
+    [9, "億"],
+    [5, "万"],
   ];
 
   let result = "";
-  let remaining = num;
-
-  for (const [divisor, name] of groups) {
-    const count = Math.floor(remaining / divisor);
-    if (count > 0) {
-      result += formatSmallNumber(count) + name;
-      remaining = remaining % divisor;
+  let pos = 0;
+  for (const [minLen, name] of groups) {
+    if (len >= minLen) {
+      const groupDigits = digits.slice(pos, len - (minLen - 1));
+      const count = parseInt(groupDigits, 10);
+      if (count > 0) {
+        result += formatSmallNumber(count) + name;
+      }
+      pos = len - (minLen - 1);
     }
   }
 
-  if (remaining >= 1000) {
-    const thousands = Math.floor(remaining / 1000);
-    result += `${thousands}千`;
+  // Remaining < 万
+  if (pos < len) {
+    const rest = parseInt(digits.slice(pos), 10);
+    if (rest > 0) {
+      if (result) {
+        // Append sub-万 remainder (e.g., 4千)
+        result += formatSmallNumber(rest);
+      } else {
+        result = rest.toLocaleString();
+      }
+    }
   }
 
-  return result;
+  return result || digits;
 }
