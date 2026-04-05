@@ -5,300 +5,300 @@ meta:
   unit: 年前
   unitSymbol: 年前
   minExponent: 0
-  maxExponent: 10.1
+  maxExponent: 10
   pixelsPerExponent: 3000
 
 entries:
-  - exponent: 10.1
+  - exponent: 10
+    value: 1.38
     name: ビッグバン
     nameEn: Big Bang
-    label: 約138億年前
     description: 宇宙の誕生、時間と空間の始まり
 
-  - exponent: 10.1
+  - exponent: 10
+    value: 1.3
     name: 最初の星の誕生
     nameEn: First Stars
-    label: 約130億年前
     description: 宇宙で最初の恒星が水素ガスから誕生
 
-  - exponent: 10.1
+  - exponent: 10
+    value: 1.3
     name: 天の川銀河の形成
     nameEn: Milky Way Formation
-    label: 約130億年前
     description: 私たちの銀河が形を成し始める
 
-  - exponent: 9.7
+  - exponent: 9
+    value: 4.6
     name: 太陽系の誕生
     nameEn: Birth of the Solar System
-    label: 約46億年前
     description: ガス雲の収縮から太陽と惑星が形成
 
-  - exponent: 9.7
+  - exponent: 9
+    value: 4.5
     name: 地球の誕生
     nameEn: Birth of the Earth
-    label: 約45億年前
     description: 微惑星の衝突・合体により地球が形成
 
-  - exponent: 9.7
+  - exponent: 9
+    value: 4.5
     name: 月の形成
     nameEn: Formation of the Moon
-    label: 約45億年前
     description: 巨大衝突（ジャイアント・インパクト）で月が誕生
 
-  - exponent: 9.6
+  - exponent: 9
+    value: 4.4
     name: 最初の海
     nameEn: First Oceans
-    label: 約44億年前
     description: 地球が冷え、水蒸気が凝結して海洋が形成
 
-  - exponent: 9.6
+  - exponent: 9
+    value: 4
     name: 最初の生命
     nameEn: First Life
-    label: 約40億年前
     description: 海底の熱水噴出孔付近で原始的な微生物が誕生
 
-  - exponent: 9.5
+  - exponent: 9
+    value: 3.5
     name: 光合成の始まり
     nameEn: First Photosynthesis
-    label: 約35億年前
     description: シアノバクテリアが光合成を開始
 
-  - exponent: 9.4
+  - exponent: 9
+    value: 2.4
     name: 大酸化イベント
     nameEn: Great Oxidation Event
-    label: 約24億年前
     description: 大気中の酸素濃度が急上昇、地球環境が一変
 
-  - exponent: 9.3
+  - exponent: 9
+    value: 2
     name: 真核生物の出現
     nameEn: First Eukaryotes
-    label: 約20億年前
     description: 核を持つ細胞の誕生。複雑な生命への第一歩
 
-  - exponent: 9.0
+  - exponent: 9
+    value: 1
     name: 多細胞生物の出現
     nameEn: First Multicellular Life
-    label: 約10億年前
     description: 単細胞から多細胞への進化
 
-  - exponent: 8.7
+  - exponent: 8
+    value: 5.4
     name: カンブリア爆発
     nameEn: Cambrian Explosion
-    label: 約5.4億年前
     description: 多様な動物門が一斉に出現した生命の大爆発
 
-  - exponent: 8.7
+  - exponent: 8
+    value: 5
     name: 魚類の出現
     nameEn: First Fish
-    label: 約5億年前
     description: 脊椎動物の祖先が海に登場
 
-  - exponent: 8.7
+  - exponent: 8
+    value: 4.7
     name: 植物の上陸
     nameEn: Plants Colonize Land
-    label: 約4.7億年前
     description: 植物が初めて陸地に進出
 
-  - exponent: 8.6
+  - exponent: 8
+    value: 4
     name: 昆虫の出現
     nameEn: First Insects
-    label: 約4億年前
     description: 陸上で最初の昆虫が進化
 
-  - exponent: 8.6
+  - exponent: 8
+    value: 3.7
     name: 両生類の上陸
     nameEn: First Amphibians
-    label: 約3.7億年前
     description: 脊椎動物が初めて陸に上がる
 
-  - exponent: 8.4
+  - exponent: 8
+    value: 2.3
     name: 恐竜の時代の始まり
     nameEn: Age of Dinosaurs Begins
-    label: 約2.3億年前
     description: 三畳紀に恐竜が出現
 
-  - exponent: 8.3
+  - exponent: 8
+    value: 2
     name: 哺乳類の出現
     nameEn: First Mammals
-    label: 約2億年前
     description: 小型の哺乳類が恐竜と共存を開始
 
-  - exponent: 8.2
+  - exponent: 8
+    value: 1.5
     name: 鳥類の出現
     nameEn: First Birds
-    label: 約1.5億年前
     description: 始祖鳥など恐竜から鳥類が進化
 
-  - exponent: 8.1
+  - exponent: 8
+    value: 1.3
     name: 被子植物（花）の出現
     nameEn: First Flowering Plants
-    label: 約1.3億年前
     description: 花を咲かせる植物が登場し生態系を変革
 
-  - exponent: 7.8
+  - exponent: 7
+    value: 6.6
     name: 恐竜の絶滅
     nameEn: Dinosaur Extinction
-    label: 約6,600万年前
     description: 小惑星衝突による大量絶滅（K-Pg境界）
 
-  - exponent: 7.7
+  - exponent: 7
+    value: 5.5
     name: 霊長類の出現
     nameEn: First Primates
-    label: 約5,500万年前
     description: 恐竜絶滅後、霊長類が多様化
 
-  - exponent: 7.7
+  - exponent: 7
+    value: 5
     name: ヒマラヤ山脈の形成開始
     nameEn: Himalayas Begin Forming
-    label: 約5,000万年前
     description: インドプレートがユーラシアに衝突
 
-  - exponent: 7.4
+  - exponent: 7
+    value: 2.5
     name: 類人猿の出現
     nameEn: First Apes
-    label: 約2,500万年前
     description: サルから類人猿への分岐
 
-  - exponent: 6.8
+  - exponent: 6
+    value: 7
     name: 人類とチンパンジーの分岐
     nameEn: Human-Chimpanzee Split
-    label: 約700万年前
     description: 人類の系統がチンパンジーと分かれる
 
-  - exponent: 6.6
+  - exponent: 6
+    value: 4
     name: 直立二足歩行
     nameEn: Bipedalism
-    label: 約400万年前
     description: アウストラロピテクスが二足歩行を確立
 
-  - exponent: 6.4
+  - exponent: 6
+    value: 2.6
     name: 石器の使用開始
     nameEn: First Stone Tools
-    label: 約260万年前
     description: 最古の石器（オルドワン石器）の制作
 
-  - exponent: 6.3
+  - exponent: 6
+    value: 1.9
     name: ホモ・エレクトスの出現
     nameEn: Homo Erectus
-    label: 約190万年前
     description: 火の使用を始めた人類の祖先
 
-  - exponent: 5.5
+  - exponent: 5
+    value: 3
     name: ホモ・サピエンスの誕生
     nameEn: Homo Sapiens
-    label: 約30万年前
     description: 現生人類がアフリカで誕生
 
-  - exponent: 5.0
+  - exponent: 5
+    value: 1
     name: 言語の発達
     nameEn: Development of Language
-    label: 約10万年前
     description: 複雑な言語コミュニケーションの始まり
 
-  - exponent: 4.6
+  - exponent: 4
+    value: 4
     name: 洞窟壁画
     nameEn: Cave Paintings
-    label: 約4万年前
     description: ラスコーやアルタミラの芸術的表現
 
-  - exponent: 4.0
+  - exponent: 4
+    value: 1
     name: 農業革命
     nameEn: Agricultural Revolution
-    label: 約1万年前
     description: 作物の栽培と家畜の飼育が始まり定住生活へ
 
-  - exponent: 3.7
+  - exponent: 3
+    value: 5
     name: 文字の発明
     nameEn: Invention of Writing
-    label: 約5,000年前
     description: メソポタミアの楔形文字、歴史時代の始まり
 
-  - exponent: 3.7
+  - exponent: 3
+    value: 4.5
     name: ピラミッド建設
     nameEn: Great Pyramids Built
-    label: 約4,500年前
     description: 古代エジプト文明の象徴
 
-  - exponent: 3.4
+  - exponent: 3
+    value: 2.5
     name: 古代ギリシャ哲学
     nameEn: Ancient Greek Philosophy
-    label: 約2,500年前
     description: ソクラテス、プラトン、アリストテレス
 
-  - exponent: 3.3
+  - exponent: 3
+    value: 2
     name: ローマ帝国の最盛期
     nameEn: Roman Empire at Its Peak
-    label: 約2,000年前
     description: 地中海世界を支配した巨大帝国
 
-  - exponent: 3.1
+  - exponent: 3
+    value: 1.4
     name: 唐
     nameEn: Tang Dynasty
-    label: 約1,400年前
     description: 中国の黄金時代、文化・技術・交易が東アジア全域に影響（618-907年）
 
-  - exponent: 2.9
+  - exponent: 2
+    value: 8
     name: 鎌倉時代
     nameEn: Kamakura Period
-    label: 約800年前
     description: 日本初の武家政権、武士の時代の幕開け（1185-1333年）
 
-  - exponent: 2.8
+  - exponent: 2
+    value: 5.8
     name: 活版印刷の発明
     nameEn: Printing Press
-    label: 約580年前
     description: グーテンベルクの印刷革命（1440年頃）
 
-  - exponent: 2.4
+  - exponent: 2
+    value: 2.5
     name: 産業革命
     nameEn: Industrial Revolution
-    label: 約250年前
     description: 蒸気機関が社会を根本から変革（1770年代）
 
-  - exponent: 2.2
+  - exponent: 2
+    value: 1.58
     name: 明治維新
     nameEn: Meiji Restoration
-    label: 約158年前
     description: 日本の近代化の始まり、封建制度から近代国家へ（1868年）
 
-  - exponent: 2.1
+  - exponent: 2
+    value: 1.4
     name: 電気の実用化
     nameEn: Practical Electricity
-    label: 約140年前
     description: エジソンの電球、現代文明の基盤（1880年代）
 
-  - exponent: 2.1
+  - exponent: 2
+    value: 1.2
     name: 飛行機の発明
     nameEn: First Airplane
-    label: 約120年前
     description: ライト兄弟の初飛行（1903年）
 
-  - exponent: 1.9
+  - exponent: 1
+    value: 8
     name: コンピュータの発明
     nameEn: First Computers
-    label: 約80年前
     description: ENIACなど最初の電子計算機（1940年代）
 
-  - exponent: 1.8
+  - exponent: 1
+    value: 5.5
     name: 月面着陸
     nameEn: Moon Landing
-    label: 約55年前
     description: アポロ11号が人類初の月面着陸（1969年）
 
-  - exponent: 1.5
+  - exponent: 1
+    value: 3
     name: インターネットの普及
     nameEn: Rise of the Internet
-    label: 約30年前
     description: World Wide Webが一般に普及（1990年代）
 
-  - exponent: 1.3
+  - exponent: 1
+    value: 1.5
     name: スマートフォンの時代
     nameEn: Smartphone Era
-    label: 約15年前
     description: iPhone登場以降、世界がモバイルに（2007年〜）
 
-  - exponent: 0.0
+  - exponent: 0
+    value: 0
     name: AI革命
     nameEn: AI Revolution
-    label: 現在
     description: 大規模言語モデルが社会を変え始めている

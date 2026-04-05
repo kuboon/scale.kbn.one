@@ -1,40 +1,54 @@
 import { ScaleMeta } from "./types.ts";
 
-export function totalHeight(meta: ScaleMeta): number {
-  const range = meta.maxExponent - meta.minExponent;
-  return range * meta.pixelsPerExponent + window.innerHeight;
+const VIEW_MARGIN = 0.5; // visible range is ±0.5 exponents around center
+
+export interface ViewportState {
+  exponent: number;
+  rangeMin: number; // linear value at lower bound
+  rangeMax: number; // linear value at upper bound
 }
 
-/** Returns true if the scale should be displayed in reverse (top=max, bottom=min) */
-function isReversed(meta: ScaleMeta): boolean {
-  return meta.id === "history";
+function isReversed(_meta: ScaleMeta): boolean {
+  return true;
 }
 
-export function scrollYToExponent(scrollY: number, meta: ScaleMeta): number {
-  const maxScroll = totalHeight(meta) - window.innerHeight;
-  if (maxScroll <= 0) return meta.minExponent;
-  const progress = Math.min(Math.max(scrollY / maxScroll, 0), 1);
-  if (isReversed(meta)) {
-    // top = maxExponent (distant past), bottom = minExponent (present)
-    return meta.maxExponent - progress * (meta.maxExponent - meta.minExponent);
-  }
-  return meta.minExponent + progress * (meta.maxExponent - meta.minExponent);
+/** Get the visible linear range for a given center exponent */
+export function getViewport(exponent: number): ViewportState {
+  return {
+    exponent,
+    rangeMin: 10 ** (exponent - VIEW_MARGIN),
+    rangeMax: 10 ** (exponent + VIEW_MARGIN),
+  };
 }
 
-export function exponentToY(exponent: number, meta: ScaleMeta): number {
-  const range = meta.maxExponent - meta.minExponent;
-  if (range <= 0) return 0;
-  if (isReversed(meta)) {
-    const progress = (meta.maxExponent - exponent) / range;
-    return progress * (totalHeight(meta) - window.innerHeight);
-  }
-  const progress = (exponent - meta.minExponent) / range;
-  return progress * (totalHeight(meta) - window.innerHeight);
+/** Map a linear value to a fraction (0=top, 1=bottom) within the viewport */
+export function valueToFraction(value: number, vp: ViewportState, meta: ScaleMeta): number {
+  const raw = (value - vp.rangeMin) / (vp.rangeMax - vp.rangeMin);
+  // History: top = large values (distant past), bottom = small (present)
+  return isReversed(meta) ? 1 - raw : raw;
 }
 
 export function hueForExponent(exponent: number, meta: ScaleMeta): number {
   const range = meta.maxExponent - meta.minExponent;
   const progress = (exponent - meta.minExponent) / range;
-  // Small scale: cool purple (270) → large scale: warm orange (30)
   return 270 - progress * 240;
+}
+
+/** Generate nice tick values for a linear range */
+export function computeTicks(rangeMin: number, rangeMax: number): number[] {
+  const span = rangeMax - rangeMin;
+  if (span <= 0) return [];
+  const rawStep = span / 6;
+  const mag = 10 ** Math.floor(Math.log10(rawStep));
+  const r = rawStep / mag;
+  const nice = r <= 1.5 ? 1 : r <= 3.5 ? 2 : r <= 7.5 ? 5 : 10;
+  const step = nice * mag;
+
+  const ticks: number[] = [];
+  let v = Math.ceil(rangeMin / step) * step;
+  while (v <= rangeMax) {
+    ticks.push(v);
+    v += step;
+  }
+  return ticks;
 }

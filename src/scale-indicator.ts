@@ -1,13 +1,11 @@
 import { ScaleMeta } from "./types";
-import { scrollYToExponent, hueForExponent } from "./scroll-engine";
 import { superscript } from "./format";
 
 let indicatorEl: HTMLElement | null = null;
 let flashEl: HTMLElement | null = null;
-let rafId = 0;
 let prevIntExponent: number | null = null;
 
-export function createIndicator(meta: ScaleMeta): HTMLElement {
+export function createIndicator(_meta: ScaleMeta): HTMLElement {
   indicatorEl = document.createElement("div");
   indicatorEl.className = "scale-indicator";
   indicatorEl.innerHTML = `
@@ -23,38 +21,30 @@ export function createIndicator(meta: ScaleMeta): HTMLElement {
   return indicatorEl;
 }
 
-export function updateIndicator(meta: ScaleMeta) {
+export function updateIndicator(meta: ScaleMeta, exponent: number) {
   if (!indicatorEl) return;
-  cancelAnimationFrame(rafId);
 
-  rafId = requestAnimationFrame(() => {
-    const exponent = scrollYToExponent(window.scrollY, meta);
-    const rounded = Math.round(exponent);
-    const hue = hueForExponent(exponent, meta);
+  const rounded = Math.round(exponent);
 
-    const expEl = indicatorEl!.querySelector(".scale-indicator-exp")!;
-    const readableEl = indicatorEl!.querySelector(".scale-indicator-readable")!;
+  const expEl = indicatorEl.querySelector(".scale-indicator-exp")!;
+  const readableEl = indicatorEl.querySelector(".scale-indicator-readable")!;
 
-    const sign = rounded >= 0 ? "+" : "";
-    expEl.textContent = `10${superscript(sign + rounded)} ${meta.unitSymbol}`;
-    readableEl.textContent = humanReadable(rounded, meta.id);
+  const sign = rounded >= 0 ? "+" : "";
+  expEl.textContent = `10${superscript(sign + rounded)} ${meta.unitSymbol}`;
+  readableEl.textContent = humanReadable(rounded, meta.id);
 
-    document.documentElement.style.setProperty("--bg-hue", String(hue));
-
-    // Boundary crossing flash
-    if (flashEl && prevIntExponent !== null && rounded !== prevIntExponent) {
-      const arrow = rounded > prevIntExponent ? "\u2191" : "\u2193";
-      flashEl.textContent = `\u00d710${arrow}`;
-      flashEl.classList.remove("boundary-flash--active");
-      void flashEl.offsetWidth; // force reflow to restart animation
-      flashEl.classList.add("boundary-flash--active");
-    }
-    prevIntExponent = rounded;
-  });
+  // Boundary crossing flash
+  if (flashEl && prevIntExponent !== null && rounded !== prevIntExponent) {
+    const arrow = rounded > prevIntExponent ? "\u2191" : "\u2193";
+    flashEl.textContent = `\u00d710${arrow}`;
+    flashEl.classList.remove("boundary-flash--active");
+    void flashEl.offsetWidth; // force reflow to restart animation
+    flashEl.classList.add("boundary-flash--active");
+  }
+  prevIntExponent = rounded;
 }
 
 export function destroyIndicator() {
-  cancelAnimationFrame(rafId);
   indicatorEl = null;
   flashEl = null;
   prevIntExponent = null;

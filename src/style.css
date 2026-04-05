@@ -111,7 +111,9 @@ body {
 /* ============ Explorer ============ */
 
 .explorer {
-  position: relative;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
 }
 
 .explorer-back {
@@ -135,10 +137,19 @@ body {
 }
 
 .explorer-header {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 10;
   text-align: center;
-  padding: 4rem 1.5rem 2rem;
+  padding: 3rem 1.5rem 1rem;
+  background: linear-gradient(to bottom, var(--bg-color) 60%, transparent);
+  pointer-events: none;
+}
+
+.explorer-header > * {
+  pointer-events: auto;
 }
 
 .explorer-title {
@@ -153,9 +164,10 @@ body {
   margin-top: 0.25rem;
 }
 
-.explorer-track {
-  position: relative;
-  width: 100%;
+.explorer-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
 }
 
 .explorer-line {
@@ -176,6 +188,7 @@ body {
 
 .scale-card {
   position: absolute;
+  top: 0;
   left: 2.5rem;
   right: 1rem;
   padding: 1.25rem;
@@ -183,19 +196,15 @@ body {
   background: var(--card-bg);
   backdrop-filter: blur(12px);
   border: 1px solid var(--card-border);
-  transform: translateY(0);
+  will-change: transform, opacity;
 
   /* animation initial state */
   opacity: 0;
-  translate: 0 30px;
-  transition:
-    opacity 0.5s ease,
-    translate 0.5s ease;
+  transition: opacity 0.3s ease;
 }
 
 .scale-card.visible {
   opacity: 1;
-  translate: 0 0;
 }
 
 .scale-card::before {
@@ -240,12 +249,14 @@ body {
 
 .tick-mark {
   position: absolute;
+  top: 0;
   left: 1.5rem;
   width: 20px;
   height: 1px;
   background: rgba(255, 255, 255, 0.15);
   pointer-events: none;
   z-index: 1;
+  will-change: transform;
 }
 
 .tick-label {
@@ -256,18 +267,6 @@ body {
   font-family: "Courier New", monospace;
   color: rgba(255, 255, 255, 0.25);
   white-space: nowrap;
-}
-
-.step-marker {
-  position: absolute;
-  left: 0.6rem;
-  font-size: 0.55rem;
-  font-family: "Courier New", monospace;
-  color: rgba(255, 255, 255, 0.1);
-  pointer-events: none;
-  z-index: 1;
-  writing-mode: vertical-rl;
-  transform: translateY(-50%);
 }
 
 /* ============ Indicator HUD ============ */
@@ -364,9 +363,5 @@ body {
 
   .tick-mark {
     left: 2.5rem;
-  }
-
-  .step-marker {
-    left: 1.6rem;
   }
 }
