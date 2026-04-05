@@ -22,11 +22,10 @@ UI is primarily in Japanese with English translations. Licensed under MIT.
 ```sh
 npm run dev       # Local dev server (vite-plus)
 npm run build     # Production build → dist/
+npm run test      # Run tests (vp test run)
 npm run preview   # Build + local preview via wrangler
 npm run deploy    # Build + deploy to Cloudflare
 ```
-
-No test runner is configured. There are no automated tests.
 
 ## Project Structure
 
@@ -59,11 +58,9 @@ No test runner is configured. There are no automated tests.
 
 **Functional style:** No classes. Each module exports functions (e.g., `renderExplorer`, `destroyExplorer`). State is managed via closures.
 
-**Logarithmic viewport:** Core math in `scroll-engine.ts` — converts linear scroll input to logarithmic exponent positions. Tick marks use "nice number" algorithm (1, 2, 5 multipliers).
+**Logarithmic viewport:** Core math in `scroll-engine.ts` — converts linear scroll input to logarithmic exponent positions. Tick marks are fixed at 2, 4, 6, 8 × 10^n multipliers.
 
 **Animation loop:** `requestAnimationFrame` with exponential easing: `current += (target - current) * 0.12`.
-
-**Dynamic stacking:** Cards avoid overlap via `prevBottomY` tracking rather than fixed grid.
 
 **Hue theming:** Background hue cycles (270°→30°) across the scale via `--bg-hue` CSS variable.
 
@@ -108,7 +105,7 @@ entries:
 
 ## Important Notes
 
-- No test suite exists — manual testing only
+- Tests use `vite-plus/test` (Vitest-compatible API): `npm test`
 - Build output goes to `dist/` (gitignored)
 - `.npmrc` sets `ignore-scripts=true` and `min-release-age=7d` for security
 - The app uses no external runtime JS — everything is bundled vanilla TypeScript
