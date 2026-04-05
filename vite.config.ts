@@ -1,10 +1,10 @@
-import { defineConfig } from 'vite';
-import yaml from '@modyfi/vite-plugin-yaml';
+import { defineConfig } from "vite-plus";
+import { yamlPlugin } from "./vite-plugin-yaml.ts";
 
 export default defineConfig({
-  plugins: [yaml()],
+  plugins: [yamlPlugin()],
   build: {
-    target: 'es2022',
-    outDir: 'dist',
+    target: "es2022",
+    outDir: "dist",
   },
 });
