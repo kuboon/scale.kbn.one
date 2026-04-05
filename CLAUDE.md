@@ -88,13 +88,12 @@ meta:
   unitSymbol: 年前
   minExponent: -1
   maxExponent: 11
-  pixelsPerExponent: 300
 entries:
-  - exponent: 10.14    # log₁₀ value
-    value: 1.38e10      # actual value (coefficient × 10^exp)
-    name: ビッグバン     # Japanese name
-    nameEn: Big Bang     # English name
-    description: ...     # Japanese description
+  - exponent: 10 # log₁₀ value
+    value: 1.38 # actual value is (value × 10^exp)
+    name: ビッグバン # Japanese name
+    nameEn: Big Bang # English name
+    description: ... # Japanese description
 ```
 
 ## CI/CD

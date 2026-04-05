@@ -108,6 +108,8 @@ function formatJapaneseNumber(value: number, exponent: number): string {
 
   const len = digits.length;
   const groups: [number, string][] = [
+    [21, "垓"],
+    [17, "京"],
     [13, "兆"],
     [9, "億"],
     [5, "万"],

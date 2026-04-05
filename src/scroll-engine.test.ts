@@ -12,17 +12,6 @@ const historyMeta = {
   pixelsPerExponent: 300,
 };
 
-const lengthMeta = {
-  id: "length",
-  title: "",
-  subtitle: "",
-  unit: "メートル",
-  unitSymbol: "m",
-  minExponent: -35,
-  maxExponent: 27,
-  pixelsPerExponent: 300,
-};
-
 describe("getViewport", () => {
   it("returns ±0.5 exponent range", () => {
     const vp = getViewport(5);
@@ -52,8 +41,9 @@ describe("valueToFraction", () => {
     const vp = getViewport(5);
     const large = 10 ** 5.4;
     const small = 10 ** 4.6;
-    expect(valueToFraction(large, vp, historyMeta))
-      .toBeLessThan(valueToFraction(small, vp, historyMeta));
+    expect(valueToFraction(large, vp, historyMeta)).toBeLessThan(
+      valueToFraction(small, vp, historyMeta),
+    );
   });
 });
 

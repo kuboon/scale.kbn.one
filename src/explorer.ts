@@ -1,4 +1,4 @@
-import { ScaleData, ScaleMeta } from "./types.ts";
+import { ScaleData } from "./types.ts";
 import { getViewport, valueToFraction, hueForExponent, computeTicks } from "./scroll-engine.ts";
 import { createIndicator, updateIndicator, destroyIndicator } from "./scale-indicator.ts";
 import { toJapaneseLabel } from "./format.ts";
@@ -11,7 +11,6 @@ interface CardInfo {
 }
 
 const MAX_TICKS = 20;
-const CARD_HEIGHT = 140;
 const TOP_PAD = 120;
 const BOTTOM_PAD = 200;
 
@@ -27,10 +26,6 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
   container.innerHTML = `
     <div class="explorer">
       <a href="#" class="explorer-back">\u2190 戻る</a>
-      <div class="explorer-header">
-        <h1 class="explorer-title">${meta.title}</h1>
-        <p class="explorer-subtitle">${meta.subtitle}</p>
-      </div>
       <div class="explorer-viewport">
         <div class="explorer-line"></div>
       </div>
@@ -57,9 +52,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     el.className = "scale-card";
     const label = toJapaneseLabel(entry.value, entry.exponent, meta.unitSymbol);
     el.innerHTML = `
-      <div class="scale-card-exponent">${label}</div>
-      <div class="scale-card-name">${entry.name}</div>
-      <div class="scale-card-name-en">${entry.nameEn}</div>
+      <div><span class="scale-card-exponent">${label}</span> <span class="scale-card-name">${entry.name}</span></div>
       <div class="scale-card-desc">${entry.description}</div>
     `;
     viewport.appendChild(el);
