@@ -8,7 +8,6 @@ let cleanup: (() => void) | null = null;
 interface CardInfo {
   el: HTMLElement;
   value: number;
-  stackOffset: number;
 }
 
 const MAX_TICKS = 20;
@@ -51,11 +50,9 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     tickPool.push(tick);
   }
 
-  // Create card elements
+  // Create card elements (sorted by value descending = top to bottom on reversed axis)
   const cards: CardInfo[] = [];
-  const groupCount = new Map<number, number>();
   for (const entry of data.entries) {
-    const idx = groupCount.get(entry.exponent) ?? 0;
     const el = document.createElement("div");
     el.className = "scale-card";
     const label = toJapaneseLabel(entry.value, entry.exponent, meta.unitSymbol);
@@ -69,9 +66,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     cards.push({
       el,
       value: entry.value > 0 ? entry.value * 10 ** entry.exponent : 10 ** entry.exponent,
-      stackOffset: idx * CARD_HEIGHT,
     });
-    groupCount.set(entry.exponent, idx + 1);
   }
 
   // Create indicator
@@ -119,18 +114,23 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     const usableH = vpHeight - TOP_PAD - BOTTOM_PAD;
     const vp = getViewport(currentExp);
 
-    // Update cards
+    // Update cards with dynamic stacking to prevent overlap
+    let prevBottomY = -Infinity;
     for (const c of cards) {
       const frac = valueToFraction(c.value, vp, meta);
-      const y = TOP_PAD + frac * usableH + c.stackOffset;
 
       if (frac >= -0.3 && frac <= 1.3) {
+        let y = TOP_PAD + frac * usableH;
+        if (y < prevBottomY) {
+          y = prevBottomY;
+        }
         c.el.style.display = "";
         c.el.style.transform = `translateY(${y}px)`;
         // Fade at edges
         const edge = frac < 0 ? -frac / 0.3 : frac > 1 ? (frac - 1) / 0.3 : 0;
         c.el.style.opacity = String(Math.max(0, 1 - edge));
         if (!c.el.classList.contains("visible")) c.el.classList.add("visible");
+        prevBottomY = y + CARD_HEIGHT;
       } else {
         c.el.style.display = "none";
       }
