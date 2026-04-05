@@ -23,7 +23,10 @@ export function getViewport(exponent: number): ViewportState {
 
 /** Map a linear value to a fraction (0=top, 1=bottom) within the viewport */
 export function valueToFraction(value: number, vp: ViewportState, meta: ScaleMeta): number {
-  const raw = (value - vp.rangeMin) / (vp.rangeMax - vp.rangeMin);
+  const logVal = Math.log10(Math.max(value, 1e-30));
+  const logMin = Math.log10(vp.rangeMin);
+  const logMax = Math.log10(vp.rangeMax);
+  const raw = (logVal - logMin) / (logMax - logMin);
   // History: top = large values (distant past), bottom = small (present)
   return isReversed(meta) ? 1 - raw : raw;
 }
@@ -34,21 +37,23 @@ export function hueForExponent(exponent: number, meta: ScaleMeta): number {
   return 270 - progress * 240;
 }
 
-/** Generate nice tick values for a linear range */
+/** Generate nice tick values for a logarithmic range (1-2-5 sequence) */
 export function computeTicks(rangeMin: number, rangeMax: number): number[] {
-  const span = rangeMax - rangeMin;
-  if (span <= 0) return [];
-  const rawStep = span / 6;
-  const mag = 10 ** Math.floor(Math.log10(rawStep));
-  const r = rawStep / mag;
-  const nice = r <= 1.5 ? 1 : r <= 3.5 ? 2 : r <= 7.5 ? 5 : 10;
-  const step = nice * mag;
-
+  if (rangeMin <= 0 || rangeMax <= rangeMin) return [];
+  const logMin = Math.log10(rangeMin);
+  const logMax = Math.log10(rangeMax);
+  const startExp = Math.floor(logMin);
+  const endExp = Math.ceil(logMax);
+  const multipliers = [1, 2, 5];
   const ticks: number[] = [];
-  let v = Math.ceil(rangeMin / step) * step;
-  while (v <= rangeMax) {
-    ticks.push(v);
-    v += step;
+
+  for (let exp = startExp; exp <= endExp; exp++) {
+    for (const m of multipliers) {
+      const val = m * 10 ** exp;
+      if (val >= rangeMin && val <= rangeMax) {
+        ticks.push(val);
+      }
+    }
   }
   return ticks;
 }
