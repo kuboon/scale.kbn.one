@@ -6,7 +6,7 @@ function processEntry(entry: Record<string, unknown>): Record<string, unknown> {
   if (entry.ad !== undefined) {
     const currentYear = new Date().getFullYear();
     const yearsAgo = currentYear - (entry.ad as number);
-    if (yearsAgo <= 0) throw new Error(`ad: ${entry.ad} is in the future`);
+    if (yearsAgo <= 0) throw new Error(`ad: ${entry.ad as number} is in the future`);
     const exponent = Math.floor(Math.log10(yearsAgo));
     const value = yearsAgo / Math.pow(10, exponent);
     const { ad: _ad, ...rest } = entry;
