@@ -4,13 +4,14 @@ import * as fs from "node:fs";
 
 function processEntry(entry: Record<string, unknown>): Record<string, unknown> {
   if (entry.ad !== undefined) {
+    const ad = entry.ad as number;
     const currentYear = new Date().getFullYear();
-    const yearsAgo = currentYear - (entry.ad as number);
-    if (yearsAgo <= 0) throw new Error(`ad: ${entry.ad as number} is in the future`);
+    const yearsAgo = currentYear - ad;
+    if (yearsAgo <= 0) throw new Error(`ad: ${ad} is in the future`);
     const exponent = Math.floor(Math.log10(yearsAgo));
     const value = yearsAgo / Math.pow(10, exponent);
     const { ad: _ad, ...rest } = entry;
-    return { ...rest, exponent, value };
+    return { ...rest, ad, exponent, value };
   }
   return entry;
 }

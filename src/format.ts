@@ -25,7 +25,8 @@ export function superscript(s: string): string {
  *       (1.38, 10, "年前") → "約138億年前"
  *       (1.6, -35, "m") → "約1.6×10⁻³⁵ m"
  */
-export function toJapaneseLabel(value: number, exponent: number, unitSymbol: string): string {
+export function toJapaneseLabel(value: number, exponent: number, unitSymbol: string, ad?: number): string {
+  if (ad !== undefined) return `${ad} 年`;
   if (value === 0) return "現在";
 
   const num = value * 10 ** exponent;
