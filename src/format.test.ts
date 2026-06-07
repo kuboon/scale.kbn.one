@@ -35,7 +35,7 @@ describe("toJapaneseLabel", () => {
   });
 
   it("shows AD entries as year labels", () => {
-    expect(toJapaneseLabel(1.58, 2, "年前", 1868)).toBe("1868 年");
+    expect(toJapaneseLabel(0, -99, "m", 1868)).toBe("1868 年");
   });
 });
 
