@@ -33,6 +33,10 @@ describe("toJapaneseLabel", () => {
     expect(toJapaneseLabel(1, 0, "m")).toBe("約1 m");
     expect(toJapaneseLabel(1, 0, "年前")).toBe("約1年前");
   });
+
+  it("shows AD entries as year labels", () => {
+    expect(toJapaneseLabel(0, -99, "m", 1868)).toBe("1868 年");
+  });
 });
 
 describe("humanReadable", () => {

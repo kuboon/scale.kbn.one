@@ -11,6 +11,7 @@ export interface ScaleMeta {
 export interface ScaleEntry {
   exponent: number;
   value: number;
+  ad?: number;
   name: string;
   nameEn: string;
   description: string;

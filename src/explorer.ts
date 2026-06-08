@@ -50,7 +50,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
   for (const entry of data.entries) {
     const el = document.createElement("div");
     el.className = "scale-card";
-    const label = toJapaneseLabel(entry.value, entry.exponent, meta.unitSymbol);
+    const label = toJapaneseLabel(entry.value, entry.exponent, meta.unitSymbol, entry.ad);
     el.innerHTML = `
       <div><span class="scale-card-exponent">${label}</span> <span class="scale-card-name">${entry.name}</span></div>
       <div class="scale-card-desc">${entry.description}</div>

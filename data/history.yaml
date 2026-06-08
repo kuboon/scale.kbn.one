@@ -230,6 +230,11 @@ entries:
     nameEn: Meiji Restoration
     description: 日本の近代化の始まり、封建制度から近代国家へ（1868年）
 
+  - ad: 1868
+    name: 明治元年
+    nameEn: Meiji Era Begins
+    description: 明治天皇の即位により明治時代が始まる
+
   - exponent: 2
     value: 1.4
     name: 電気の実用化
@@ -241,6 +246,26 @@ entries:
     name: 飛行機の発明
     nameEn: First Airplane
     description: ライト兄弟の初飛行（1903年）
+
+  - ad: 1912
+    name: 大正元年
+    nameEn: Taishō Era Begins
+    description: 大正天皇の即位により大正時代が始まる
+
+  - ad: 1918
+    name: 第一次世界大戦 終戦
+    nameEn: End of World War I
+    description: 1918年11月11日、西部戦線での停戦協定により第一次世界大戦が終結
+
+  - ad: 1926
+    name: 昭和元年
+    nameEn: Shōwa Era Begins
+    description: 昭和天皇の即位により昭和時代が始まる
+
+  - ad: 1945
+    name: 第二次世界大戦 終戦
+    nameEn: End of World War II
+    description: 1945年8月15日の玉音放送により日本が降伏、第二次世界大戦が終結
 
   - exponent: 1
     value: 8
