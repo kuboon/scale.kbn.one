@@ -66,7 +66,7 @@ Drags lock to their dominant axis (`dominantAxis`) so a diagonal swipe never zoo
 
 **Bottom ruler:** `scale-ruler.ts` mirrors the vertical axis horizontally — the same tick values, laid left-to-right. Zooming spreads its graduations apart and re-labels them. Only every nth label is drawn (`labelStride`) so numbers never collide. The vertical gridlines are deliberately unlabelled; the ruler owns the numbers.
 
-**Animation loop:** `requestAnimationFrame` with exponential easing: `current += (target - current) * 0.12`, applied to `spanExp` and `bottom` independently. The loop only writes `transform`/`opacity`/`display` — element creation and text layout stay out of it. Cards that would collide on the linear axis are dropped (`MIN_CARD_GAP`) rather than overlapped.
+**Animation loop:** `requestAnimationFrame` with exponential easing: `current += (target - current) * 0.12`, applied to `spanExp` and `bottom` independently. The loop only writes `transform`/`opacity`/`display` — element creation and text layout stay out of it. Crowded cards are left to overlap on purpose: zooming in is what pulls them apart, so nothing is culled except what falls off-screen.
 
 **Hue theming:** Background hue cycles (270°→30°) across the scale via `--bg-hue` CSS variable.
 

@@ -23,7 +23,6 @@ const MAX_TICKS = 20;
 const AXIS_TICKS = 10;
 const TOP_PAD = 120;
 const BOTTOM_PAD = 200;
-const MIN_CARD_GAP = 88; // px — cards closer than this on the linear axis are dropped
 
 export function renderExplorer(container: HTMLElement, data: ScaleData) {
   const { meta } = data;
@@ -159,20 +158,17 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     usableH = Math.max(1, viewport.clientHeight - TOP_PAD - BOTTOM_PAD);
     const vp = getViewport(currentSpanExp, currentBottom);
 
-    // Update cards, dropping any that would collide with the one above
-    let lastCardY = -Infinity;
+    // Update cards. Crowded cards are left to overlap on purpose — zooming in
+    // is what pulls them apart.
     for (const c of cards) {
       const frac = valueToFraction(c.value, vp);
-      const y = TOP_PAD + frac * usableH;
-
-      if (frac < -0.3 || frac > 1.3 || y - lastCardY < MIN_CARD_GAP) {
+      if (frac < -0.3 || frac > 1.3) {
         c.el.style.display = "none";
         continue;
       }
-      lastCardY = y;
 
       c.el.style.display = "";
-      c.el.style.transform = `translateY(${y}px)`;
+      c.el.style.transform = `translateY(${TOP_PAD + frac * usableH}px)`;
       // Fade at edges
       const edge = frac < 0 ? -frac / 0.3 : frac > 1 ? (frac - 1) / 0.3 : 0;
       c.el.style.opacity = String(Math.max(0, 1 - edge));
