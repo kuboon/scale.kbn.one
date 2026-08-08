@@ -44,8 +44,28 @@ export function toJapaneseLabel(value: number, exponent: number, unitSymbol: str
 }
 
 /**
+ * Short label for a ruler graduation: plain digits inside the human range,
+ * superscript scientific notation outside it.
+ * e.g., 1000 → "1000", 2e10 → "2×10¹⁰", 4e-35 → "4×10⁻³⁵"
+ */
+export function formatTickValue(value: number): string {
+  if (value === 0) return "0";
+
+  const abs = Math.abs(value);
+  if (abs >= 1e-3 && abs < 1e5) {
+    return String(+value.toPrecision(4));
+  }
+
+  const exponent = Math.floor(Math.log10(abs));
+  const mantissa = +Math.abs(value / 10 ** exponent).toPrecision(3);
+  const sign = value < 0 ? "-" : "";
+  const coefficient = mantissa === 1 ? "" : `${mantissa}×`;
+  return `${sign}${coefficient}10${superscript(String(exponent))}`;
+}
+
+/**
  * Human-readable label for a given 10^exp value in the specified scale.
- * Used by the indicator HUD.
+ * Used by the ruler readout.
  */
 export function humanReadable(exp: number, scaleId: string): string {
   if (scaleId === "history") return humanReadableHistory(exp);

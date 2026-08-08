@@ -1,62 +1,85 @@
 import { ScaleMeta } from "./types.ts";
 
-const VIEW_MARGIN = 0.5; // visible range is ±0.5 exponents around center
+/** Headroom above maxExponent so the largest entry stays reachable when zoomed out */
+const TOP_HEADROOM = 0.5;
 
+/** The vertical axis is linear; only the span it covers is logarithmic. */
 export interface ViewportState {
-  exponent: number;
-  rangeMin: number; // linear value at lower bound
-  rangeMax: number; // linear value at upper bound
+  spanExp: number; // log₁₀ of the visible span — the zoom level
+  span: number; // 10 ** spanExp
+  bottom: number; // value at the bottom edge
+  top: number; // value at the top edge
 }
 
-function isReversed(_meta: ScaleMeta): boolean {
-  return true;
+export type GestureAxis = "horizontal" | "vertical";
+
+/** Highest value any viewport may reach */
+export function topValue(meta: ScaleMeta): number {
+  return 10 ** (meta.maxExponent + TOP_HEADROOM);
 }
 
-/** Get the visible linear range for a given center exponent */
-export function getViewport(exponent: number): ViewportState {
-  return {
-    exponent,
-    rangeMin: 10 ** (exponent - VIEW_MARGIN),
-    rangeMax: 10 ** (exponent + VIEW_MARGIN),
-  };
+export function clampSpanExp(spanExp: number, meta: ScaleMeta): number {
+  return Math.max(meta.minExponent, Math.min(meta.maxExponent + TOP_HEADROOM, spanExp));
 }
 
-/** Map a linear value to a fraction (0=top, 1=bottom) within the viewport */
-export function valueToFraction(value: number, vp: ViewportState, meta: ScaleMeta): number {
-  const raw = (value - vp.rangeMin) / (vp.rangeMax - vp.rangeMin);
-  // History: top = large values (distant past), bottom = small (present)
-  return isReversed(meta) ? 1 - raw : raw;
+/** Keep the window inside [0, topValue]. The bottom edge doubles as the zoom anchor. */
+export function clampBottom(bottom: number, span: number, meta: ScaleMeta): number {
+  return Math.max(0, Math.min(topValue(meta) - span, bottom));
 }
 
-/**
- * Convert a 2D gesture into an exponent delta.
- * Callers normalise both axes so that positive means "zoom in" (下 / 右),
- * and the dominant axis wins so diagonal gestures don't double-count.
- */
-export function gestureToExponentDelta(dx: number, dy: number, sensitivity: number): number {
-  const dominant = Math.abs(dx) > Math.abs(dy) ? dx : dy;
-  return -dominant * sensitivity;
+export function getViewport(spanExp: number, bottom: number): ViewportState {
+  const span = 10 ** spanExp;
+  return { spanExp, span, bottom, top: bottom + span };
 }
 
-export function hueForExponent(exponent: number, meta: ScaleMeta): number {
+/** Map a value to a fraction (0=top, 1=bottom) — large values sit at the top */
+export function valueToFraction(value: number, vp: ViewportState): number {
+  return 1 - (value - vp.bottom) / vp.span;
+}
+
+/** Map a fraction (0=left/top, 1=right/bottom) back to a value */
+export function fractionToValue(fraction: number, vp: ViewportState): number {
+  return vp.bottom + fraction * vp.span;
+}
+
+export function hueForExponent(spanExp: number, meta: ScaleMeta): number {
   const range = meta.maxExponent - meta.minExponent;
-  const progress = (exponent - meta.minExponent) / range;
+  const raw = (spanExp - meta.minExponent) / range;
+  const progress = Math.max(0, Math.min(1, raw));
   return 270 - progress * 240;
 }
 
-/** Generate tick values at 2, 4, 6, 8 × 10^n within the visible range */
-export function computeTicks(rangeMin: number, rangeMax: number): number[] {
-  const expMin = Math.floor(Math.log10(Math.max(rangeMin, 1e-35)));
-  const expMax = Math.ceil(Math.log10(Math.max(rangeMax, 1e-35)));
-  const multipliers = [2, 4, 6, 8];
+/** Pick a round step (1, 2 or 5 × 10ⁿ) that yields roughly `count` graduations */
+export function niceStep(span: number, count: number): number {
+  if (!(span > 0) || count < 1) return 0;
+  const raw = span / count;
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const normalized = raw / magnitude;
+  const multiplier = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+  return multiplier * magnitude;
+}
+
+/** Linear graduations inside the viewport, snapped to a round step */
+export function computeTicks(vp: ViewportState, count: number): number[] {
+  const step = niceStep(vp.span, count);
+  if (!(step > 0)) return [];
+
+  const first = Math.ceil(vp.bottom / step);
+  const last = Math.floor(vp.top / step);
+  if (!Number.isFinite(first) || !Number.isFinite(last) || last - first > 1000) return [];
+
   const ticks: number[] = [];
-  for (let e = expMin - 1; e <= expMax; e++) {
-    for (const m of multipliers) {
-      const v = m * 10 ** e;
-      if (v >= rangeMin && v <= rangeMax) {
-        ticks.push(v);
-      }
-    }
+  for (let i = first; i <= last; i++) {
+    // Multiplying accumulates float noise (0.2 × 3 = 0.6000000000000001)
+    ticks.push(+(i * step).toPrecision(12));
   }
   return ticks;
+}
+
+/**
+ * Which axis a drag belongs to. Horizontal zooms, vertical pans — locking to the
+ * dominant axis keeps a diagonal swipe from doing both at once.
+ */
+export function dominantAxis(dx: number, dy: number): GestureAxis {
+  return Math.abs(dx) > Math.abs(dy) ? "horizontal" : "vertical";
 }

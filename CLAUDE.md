@@ -43,9 +43,8 @@ npm run deploy    # Build + deploy to Cloudflare
     ├── main.ts             # Entry point, hash-based routing
     ├── landing.ts          # Landing page with scale selection cards
     ├── explorer.ts         # Main interactive explorer (scroll, touch, animation)
-    ├── scroll-engine.ts    # Logarithmic viewport math, tick generation
-    ├── scale-card.ts       # Card component for individual scale entries
-    ├── scale-indicator.ts  # Bottom HUD showing current 10^n position
+    ├── scroll-engine.ts    # Linear viewport math, zoom clamping, tick generation
+    ├── scale-ruler.ts      # Bottom horizontal ruler (graduations + zoom readout)
     ├── format.ts           # Number formatting (Japanese numerals, superscript)
     ├── types.ts            # TypeScript interfaces (ScaleMeta, ScaleEntry, ScaleData)
     ├── style.css           # All styles (CSS variables, responsive, animations)
@@ -58,9 +57,16 @@ npm run deploy    # Build + deploy to Cloudflare
 
 **Functional style:** No classes. Each module exports functions (e.g., `renderExplorer`, `destroyExplorer`). State is managed via closures.
 
-**Logarithmic viewport:** Core math in `scroll-engine.ts` — converts linear scroll input to logarithmic exponent positions. Tick marks are fixed at 2, 4, 6, 8 × 10^n multipliers.
+**Viewport model:** Core math in `scroll-engine.ts`, split across two independent axes:
 
-**Animation loop:** `requestAnimationFrame` with exponential easing: `current += (target - current) * 0.12`.
+- **Vertical = linear pan.** The viewport is the plain interval `[bottom, bottom + span]`, and `valueToFraction` maps it linearly (0 = top = large values). Vertical scroll/swipe moves `bottom`.
+- **Horizontal = logarithmic zoom.** `spanExp` is the log₁₀ of the visible span; a rightward swipe decreases it (zoom in). The bottom edge is the zoom anchor, so a `0–1000` window becomes `0–100`, not `450–550`.
+
+Drags lock to their dominant axis (`dominantAxis`) so a diagonal swipe never zooms and pans at once. Graduations come from `niceStep` (round 1/2/5 × 10ⁿ steps), shared by the vertical gridlines and the bottom ruler.
+
+**Bottom ruler:** `scale-ruler.ts` mirrors the vertical axis horizontally — the same tick values, laid left-to-right. Zooming spreads its graduations apart and re-labels them. Only every nth label is drawn (`labelStride`) so numbers never collide. The vertical gridlines are deliberately unlabelled; the ruler owns the numbers.
+
+**Animation loop:** `requestAnimationFrame` with exponential easing: `current += (target - current) * 0.12`, applied to `spanExp` and `bottom` independently. The loop only writes `transform`/`opacity`/`display` — element creation and text layout stay out of it. Cards that would collide on the linear axis are dropped (`MIN_CARD_GAP`) rather than overlapped.
 
 **Hue theming:** Background hue cycles (270°→30°) across the scale via `--bg-hue` CSS variable.
 

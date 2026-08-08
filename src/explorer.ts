@@ -4,9 +4,12 @@ import {
   valueToFraction,
   hueForExponent,
   computeTicks,
-  gestureToExponentDelta,
+  clampSpanExp,
+  clampBottom,
+  dominantAxis,
+  GestureAxis,
 } from "./scroll-engine.ts";
-import { createIndicator, updateIndicator, destroyIndicator } from "./scale-indicator.ts";
+import { createRuler, updateRuler, destroyRuler } from "./scale-ruler.ts";
 import { toJapaneseLabel } from "./format.ts";
 
 let cleanup: (() => void) | null = null;
@@ -17,13 +20,19 @@ interface CardInfo {
 }
 
 const MAX_TICKS = 20;
+const AXIS_TICKS = 10;
 const TOP_PAD = 120;
 const BOTTOM_PAD = 200;
+const MIN_CARD_GAP = 88; // px — cards closer than this on the linear axis are dropped
 
 export function renderExplorer(container: HTMLElement, data: ScaleData) {
   const { meta } = data;
-  let currentExp = meta.maxExponent;
-  let targetExp = meta.maxExponent;
+
+  // Start fully zoomed out: the whole scale in one linear window
+  let targetSpanExp = clampSpanExp(meta.maxExponent + 1, meta);
+  let currentSpanExp = targetSpanExp;
+  let targetBottom = 0;
+  let currentBottom = 0;
   let rafId = 0;
 
   // Prevent body scroll
@@ -31,7 +40,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
 
   container.innerHTML = `
     <div class="explorer">
-      <a href="#" class="explorer-back">\u2190 戻る</a>
+      <a href="#" class="explorer-back">← 戻る</a>
       <div class="explorer-viewport">
         <div class="explorer-line"></div>
       </div>
@@ -41,17 +50,20 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
   const explorerEl = container.querySelector(".explorer")! as HTMLElement;
   const viewport = container.querySelector(".explorer-viewport")! as HTMLElement;
 
+  let usableH = Math.max(1, viewport.clientHeight - TOP_PAD - BOTTOM_PAD);
+
   // Create tick pool
   const tickPool: HTMLElement[] = [];
   for (let i = 0; i < MAX_TICKS; i++) {
+    // Unlabelled: the bottom ruler carries the numbers, and a label here would
+    // sit underneath the cards
     const tick = document.createElement("div");
     tick.className = "tick-mark";
-    tick.innerHTML = `<span class="tick-label"></span>`;
     viewport.appendChild(tick);
     tickPool.push(tick);
   }
 
-  // Create card elements (sorted by value descending = top to bottom on reversed axis)
+  // Create card elements, ordered top to bottom on the reversed axis
   const cards: CardInfo[] = [];
   for (const entry of data.entries) {
     const el = document.createElement("div");
@@ -67,43 +79,72 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
       value: entry.value > 0 ? entry.value * 10 ** entry.exponent : 10 ** entry.exponent,
     });
   }
+  cards.sort((a, b) => b.value - a.value);
 
-  // Create indicator
-  const indicator = createIndicator(meta);
-  explorerEl.appendChild(indicator);
+  // Create bottom ruler
+  const ruler = createRuler(meta);
+  explorerEl.appendChild(ruler);
 
   // --- Input handling ---
-  const WHEEL_SENSITIVITY = 0.002;
-  const TOUCH_SENSITIVITY = 0.005;
-  let touchX = 0;
-  let touchY = 0;
+  const ZOOM_PER_PIXEL = 0.005; // exponents per pixel of horizontal travel
+  const WHEEL_ZOOM_PER_PIXEL = 0.002;
+  const AXIS_LOCK_THRESHOLD = 8; // px of travel before a drag commits to an axis
 
-  function clampTarget() {
-    targetExp = Math.max(meta.minExponent, Math.min(meta.maxExponent, targetExp));
+  /** Horizontal input zooms: rightward shrinks the span */
+  function zoomBy(exponentDelta: number) {
+    targetSpanExp = clampSpanExp(targetSpanExp + exponentDelta, meta);
+    targetBottom = clampBottom(targetBottom, 10 ** targetSpanExp, meta);
+  }
+
+  /** Vertical input pans linearly: positive pixels move toward the small end */
+  function panBy(pixels: number) {
+    const span = 10 ** targetSpanExp;
+    targetBottom = clampBottom(targetBottom - (pixels / usableH) * span, span, meta);
   }
 
   function onWheel(e: WheelEvent) {
     e.preventDefault();
-    // Scroll down / right (positive delta) → decrease exponent → zoom in
-    targetExp += gestureToExponentDelta(e.deltaX, e.deltaY, WHEEL_SENSITIVITY);
-    clampTarget();
+    if (dominantAxis(e.deltaX, e.deltaY) === "horizontal") {
+      zoomBy(-e.deltaX * WHEEL_ZOOM_PER_PIXEL);
+    } else {
+      panBy(e.deltaY);
+    }
   }
 
+  let startX = 0;
+  let startY = 0;
+  let lastX = 0;
+  let lastY = 0;
+  let axis: GestureAxis | null = null;
+
   function onTouchStart(e: TouchEvent) {
-    touchX = e.touches[0].clientX;
-    touchY = e.touches[0].clientY;
+    startX = lastX = e.touches[0].clientX;
+    startY = lastY = e.touches[0].clientY;
+    axis = null;
   }
 
   function onTouchMove(e: TouchEvent) {
     e.preventDefault();
     const x = e.touches[0].clientX;
     const y = e.touches[0].clientY;
-    const dx = x - touchX; // positive when swiping right
-    const dy = touchY - y; // positive when swiping up = "scroll down"
-    touchX = x;
-    touchY = y;
-    targetExp += gestureToExponentDelta(dx, dy, TOUCH_SENSITIVITY);
-    clampTarget();
+
+    if (axis === null) {
+      if (Math.hypot(x - startX, y - startY) < AXIS_LOCK_THRESHOLD) {
+        lastX = x;
+        lastY = y;
+        return;
+      }
+      axis = dominantAxis(x - startX, y - startY);
+    }
+
+    if (axis === "horizontal") {
+      zoomBy(-(x - lastX) * ZOOM_PER_PIXEL);
+    } else {
+      panBy(lastY - y);
+    }
+
+    lastX = x;
+    lastY = y;
   }
 
   explorerEl.addEventListener("wheel", onWheel, { passive: false });
@@ -112,51 +153,54 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
 
   // --- Animation loop ---
   function frame() {
-    currentExp += (targetExp - currentExp) * 0.12;
+    currentSpanExp += (targetSpanExp - currentSpanExp) * 0.12;
+    currentBottom += (targetBottom - currentBottom) * 0.12;
 
-    const vpHeight = viewport.clientHeight;
-    const usableH = vpHeight - TOP_PAD - BOTTOM_PAD;
-    const vp = getViewport(currentExp);
+    usableH = Math.max(1, viewport.clientHeight - TOP_PAD - BOTTOM_PAD);
+    const vp = getViewport(currentSpanExp, currentBottom);
 
-    // Update cards
+    // Update cards, dropping any that would collide with the one above
+    let lastCardY = -Infinity;
     for (const c of cards) {
-      const frac = valueToFraction(c.value, vp, meta);
+      const frac = valueToFraction(c.value, vp);
+      const y = TOP_PAD + frac * usableH;
 
-      if (frac >= -0.3 && frac <= 1.3) {
-        const y = TOP_PAD + frac * usableH;
-        c.el.style.display = "";
-        c.el.style.transform = `translateY(${y}px)`;
-        // Fade at edges
-        const edge = frac < 0 ? -frac / 0.3 : frac > 1 ? (frac - 1) / 0.3 : 0;
-        c.el.style.opacity = String(Math.max(0, 1 - edge));
-        if (!c.el.classList.contains("visible")) c.el.classList.add("visible");
-      } else {
+      if (frac < -0.3 || frac > 1.3 || y - lastCardY < MIN_CARD_GAP) {
         c.el.style.display = "none";
+        continue;
       }
+      lastCardY = y;
+
+      c.el.style.display = "";
+      c.el.style.transform = `translateY(${y}px)`;
+      // Fade at edges
+      const edge = frac < 0 ? -frac / 0.3 : frac > 1 ? (frac - 1) / 0.3 : 0;
+      c.el.style.opacity = String(Math.max(0, 1 - edge));
+      if (!c.el.classList.contains("visible")) c.el.classList.add("visible");
     }
 
-    // Update ticks
-    const ticks = computeTicks(vp.rangeMin, vp.rangeMax);
+    // Update ticks — the ruler mirrors the same graduations horizontally
+    const ticks = computeTicks(vp, AXIS_TICKS);
     for (let i = 0; i < MAX_TICKS; i++) {
       const tel = tickPool[i];
-      if (i < ticks.length) {
-        const frac = valueToFraction(ticks[i], vp, meta);
-        if (frac >= -0.05 && frac <= 1.05) {
-          const y = TOP_PAD + frac * usableH;
-          tel.style.display = "";
-          tel.style.transform = `translateY(${y}px)`;
-          tel.querySelector(".tick-label")!.textContent = formatTickLabel(ticks[i]);
-        } else {
-          tel.style.display = "none";
-        }
+      const value = ticks[i];
+      if (value === undefined) {
+        tel.style.display = "none";
+        continue;
+      }
+
+      const frac = valueToFraction(value, vp);
+      if (frac >= -0.05 && frac <= 1.05) {
+        tel.style.display = "";
+        tel.style.transform = `translateY(${TOP_PAD + frac * usableH}px)`;
       } else {
         tel.style.display = "none";
       }
     }
 
-    // Update indicator & hue
-    updateIndicator(meta, currentExp);
-    const hue = hueForExponent(currentExp, meta);
+    // Update ruler & hue
+    updateRuler(meta, vp, ticks);
+    const hue = hueForExponent(currentSpanExp, meta);
     document.documentElement.style.setProperty("--bg-hue", String(hue));
 
     rafId = requestAnimationFrame(frame);
@@ -178,11 +222,5 @@ export function destroyExplorer() {
     cleanup();
     cleanup = null;
   }
-  destroyIndicator();
-}
-
-function formatTickLabel(value: number): string {
-  const exp = Math.floor(Math.log10(value));
-  const coeff = Math.round(value / 10 ** exp);
-  return `${coeff}`;
+  destroyRuler();
 }
