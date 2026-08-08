@@ -114,6 +114,10 @@ body {
   position: fixed;
   inset: 0;
   overflow: hidden;
+  /* Horizontal swipes drive the scale, so keep the browser's own
+     pan / back-navigation gestures out of the way */
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 .explorer-back {

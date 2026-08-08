@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vite-plus/test";
-import { getViewport, valueToFraction, hueForExponent, computeTicks } from "./scroll-engine";
+import {
+  getViewport,
+  valueToFraction,
+  hueForExponent,
+  computeTicks,
+  gestureToExponentDelta,
+} from "./scroll-engine";
 
 const historyMeta = {
   id: "history",
@@ -44,6 +50,39 @@ describe("valueToFraction", () => {
     expect(valueToFraction(large, vp, historyMeta)).toBeLessThan(
       valueToFraction(small, vp, historyMeta),
     );
+  });
+});
+
+describe("gestureToExponentDelta", () => {
+  it("zooms in on a rightward gesture", () => {
+    expect(gestureToExponentDelta(100, 0, 0.005)).toBeLessThan(0);
+  });
+
+  it("zooms out on a leftward gesture", () => {
+    expect(gestureToExponentDelta(-100, 0, 0.005)).toBeGreaterThan(0);
+  });
+
+  it("zooms in on a downward gesture", () => {
+    expect(gestureToExponentDelta(0, 100, 0.005)).toBeLessThan(0);
+  });
+
+  it("zooms out on an upward gesture", () => {
+    expect(gestureToExponentDelta(0, -100, 0.005)).toBeGreaterThan(0);
+  });
+
+  it("follows the dominant axis instead of summing them", () => {
+    // right (zoom in) beats a smaller upward component (zoom out)
+    expect(gestureToExponentDelta(100, -20, 0.005)).toBeCloseTo(-0.5);
+    expect(gestureToExponentDelta(20, -100, 0.005)).toBeCloseTo(0.5);
+  });
+
+  it("scales linearly with sensitivity", () => {
+    expect(gestureToExponentDelta(0, 100, 0.002)).toBeCloseTo(-0.2);
+    expect(gestureToExponentDelta(0, 100, 0.004)).toBeCloseTo(-0.4);
+  });
+
+  it("returns zero for no movement", () => {
+    expect(gestureToExponentDelta(0, 0, 0.005)).toBeCloseTo(0);
   });
 });
 

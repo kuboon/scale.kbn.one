@@ -28,6 +28,16 @@ export function valueToFraction(value: number, vp: ViewportState, meta: ScaleMet
   return isReversed(meta) ? 1 - raw : raw;
 }
 
+/**
+ * Convert a 2D gesture into an exponent delta.
+ * Callers normalise both axes so that positive means "zoom in" (下 / 右),
+ * and the dominant axis wins so diagonal gestures don't double-count.
+ */
+export function gestureToExponentDelta(dx: number, dy: number, sensitivity: number): number {
+  const dominant = Math.abs(dx) > Math.abs(dy) ? dx : dy;
+  return -dominant * sensitivity;
+}
+
 export function hueForExponent(exponent: number, meta: ScaleMeta): number {
   const range = meta.maxExponent - meta.minExponent;
   const progress = (exponent - meta.minExponent) / range;

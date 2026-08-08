@@ -1,5 +1,11 @@
 import { ScaleData } from "./types.ts";
-import { getViewport, valueToFraction, hueForExponent, computeTicks } from "./scroll-engine.ts";
+import {
+  getViewport,
+  valueToFraction,
+  hueForExponent,
+  computeTicks,
+  gestureToExponentDelta,
+} from "./scroll-engine.ts";
 import { createIndicator, updateIndicator, destroyIndicator } from "./scale-indicator.ts";
 import { toJapaneseLabel } from "./format.ts";
 
@@ -69,6 +75,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
   // --- Input handling ---
   const WHEEL_SENSITIVITY = 0.002;
   const TOUCH_SENSITIVITY = 0.005;
+  let touchX = 0;
   let touchY = 0;
 
   function clampTarget() {
@@ -77,21 +84,25 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
 
   function onWheel(e: WheelEvent) {
     e.preventDefault();
-    // Scroll down (positive deltaY) → decrease exponent → zoom in
-    targetExp -= e.deltaY * WHEEL_SENSITIVITY;
+    // Scroll down / right (positive delta) → decrease exponent → zoom in
+    targetExp += gestureToExponentDelta(e.deltaX, e.deltaY, WHEEL_SENSITIVITY);
     clampTarget();
   }
 
   function onTouchStart(e: TouchEvent) {
+    touchX = e.touches[0].clientX;
     touchY = e.touches[0].clientY;
   }
 
   function onTouchMove(e: TouchEvent) {
     e.preventDefault();
+    const x = e.touches[0].clientX;
     const y = e.touches[0].clientY;
+    const dx = x - touchX; // positive when swiping right
     const dy = touchY - y; // positive when swiping up = "scroll down"
+    touchX = x;
     touchY = y;
-    targetExp -= dy * TOUCH_SENSITIVITY;
+    targetExp += gestureToExponentDelta(dx, dy, TOUCH_SENSITIVITY);
     clampTarget();
   }
 
