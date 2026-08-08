@@ -11,8 +11,6 @@ export interface ViewportState {
   top: number; // value at the top edge
 }
 
-export type GestureAxis = "horizontal" | "vertical";
-
 /** Highest value any viewport may reach */
 export function topValue(meta: ScaleMeta): number {
   return 10 ** (meta.maxExponent + TOP_HEADROOM);
@@ -77,9 +75,15 @@ export function computeTicks(vp: ViewportState, count: number): number[] {
 }
 
 /**
- * Which axis a drag belongs to. Horizontal zooms, vertical pans — locking to the
- * dominant axis keeps a diagonal swipe from doing both at once.
+ * Bottom edge that keeps the value sitting at `fraction` (0=top, 1=bottom) pinned
+ * in place while the span changes — i.e. zoom anchored under the pointer.
  */
-export function dominantAxis(dx: number, dy: number): GestureAxis {
-  return Math.abs(dx) > Math.abs(dy) ? "horizontal" : "vertical";
+export function zoomAnchoredBottom(
+  vp: ViewportState,
+  nextSpan: number,
+  fraction: number,
+): number {
+  const distanceFromBottom = 1 - fraction;
+  const anchorValue = vp.bottom + distanceFromBottom * vp.span;
+  return anchorValue - distanceFromBottom * nextSpan;
 }

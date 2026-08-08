@@ -6,8 +6,7 @@ import {
   computeTicks,
   clampSpanExp,
   clampBottom,
-  dominantAxis,
-  GestureAxis,
+  zoomAnchoredBottom,
 } from "./scroll-engine.ts";
 import { createRuler, updateRuler, destroyRuler } from "./scale-ruler.ts";
 import { toJapaneseLabel } from "./format.ts";
@@ -87,12 +86,23 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
   // --- Input handling ---
   const ZOOM_PER_PIXEL = 0.005; // exponents per pixel of horizontal travel
   const WHEEL_ZOOM_PER_PIXEL = 0.002;
-  const AXIS_LOCK_THRESHOLD = 8; // px of travel before a drag commits to an axis
 
-  /** Horizontal input zooms: rightward shrinks the span */
-  function zoomBy(exponentDelta: number) {
-    targetSpanExp = clampSpanExp(targetSpanExp + exponentDelta, meta);
-    targetBottom = clampBottom(targetBottom, 10 ** targetSpanExp, meta);
+  /** Where a pointer sits on the value axis: 0 = top, 1 = bottom */
+  function pointerFraction(clientY: number): number {
+    return Math.max(0, Math.min(1, (clientY - TOP_PAD) / usableH));
+  }
+
+  /** Horizontal input zooms: rightward shrinks the span, anchored under the pointer */
+  function zoomAt(exponentDelta: number, clientY: number) {
+    const nextSpanExp = clampSpanExp(targetSpanExp + exponentDelta, meta);
+    if (nextSpanExp === targetSpanExp) return;
+
+    const nextSpan = 10 ** nextSpanExp;
+    const vp = getViewport(targetSpanExp, targetBottom);
+    const bottom = zoomAnchoredBottom(vp, nextSpan, pointerFraction(clientY));
+
+    targetSpanExp = nextSpanExp;
+    targetBottom = clampBottom(bottom, nextSpan, meta);
   }
 
   /** Vertical input pans linearly: positive pixels move toward the small end */
@@ -101,25 +111,19 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     targetBottom = clampBottom(targetBottom - (pixels / usableH) * span, span, meta);
   }
 
+  // Both axes always apply, so a diagonal gesture zooms and pans at once
   function onWheel(e: WheelEvent) {
     e.preventDefault();
-    if (dominantAxis(e.deltaX, e.deltaY) === "horizontal") {
-      zoomBy(-e.deltaX * WHEEL_ZOOM_PER_PIXEL);
-    } else {
-      panBy(e.deltaY);
-    }
+    zoomAt(-e.deltaX * WHEEL_ZOOM_PER_PIXEL, e.clientY);
+    panBy(e.deltaY);
   }
 
-  let startX = 0;
-  let startY = 0;
   let lastX = 0;
   let lastY = 0;
-  let axis: GestureAxis | null = null;
 
   function onTouchStart(e: TouchEvent) {
-    startX = lastX = e.touches[0].clientX;
-    startY = lastY = e.touches[0].clientY;
-    axis = null;
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
   }
 
   function onTouchMove(e: TouchEvent) {
@@ -127,20 +131,8 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     const x = e.touches[0].clientX;
     const y = e.touches[0].clientY;
 
-    if (axis === null) {
-      if (Math.hypot(x - startX, y - startY) < AXIS_LOCK_THRESHOLD) {
-        lastX = x;
-        lastY = y;
-        return;
-      }
-      axis = dominantAxis(x - startX, y - startY);
-    }
-
-    if (axis === "horizontal") {
-      zoomBy(-(x - lastX) * ZOOM_PER_PIXEL);
-    } else {
-      panBy(lastY - y);
-    }
+    zoomAt(-(x - lastX) * ZOOM_PER_PIXEL, y);
+    panBy(lastY - y);
 
     lastX = x;
     lastY = y;

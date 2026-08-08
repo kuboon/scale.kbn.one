@@ -1,5 +1,5 @@
 import { ScaleMeta } from "./types";
-import { ViewportState } from "./scroll-engine";
+import { ViewportState, valueToFraction } from "./scroll-engine";
 import { superscript, humanReadable, formatTickValue } from "./format";
 
 const MAX_RULER_TICKS = 20;
@@ -14,8 +14,9 @@ let tickPool: HTMLElement[] = [];
 let prevIntExponent: number | null = null;
 
 /**
- * Horizontal ruler pinned to the bottom of the explorer. It mirrors the vertical
- * axis, so its graduations spread apart as a rightward swipe zooms in.
+ * Horizontal ruler pinned to the bottom of the explorer. It carries the same
+ * graduations as the vertical axis and runs the same way round (large values to
+ * the left), so they spread apart as a rightward swipe zooms in.
  */
 export function createRuler(_meta: ScaleMeta): HTMLElement {
   rulerEl = document.createElement("div");
@@ -70,7 +71,8 @@ export function updateRuler(meta: ScaleMeta, vp: ViewportState, ticks: number[])
       continue;
     }
 
-    const fraction = (value - vp.bottom) / vp.span;
+    // Runs the same way round as the vertical axis: large values to the left
+    const fraction = valueToFraction(value, vp);
     if (fraction < 0 || fraction > 1) {
       el.style.display = "none";
       continue;

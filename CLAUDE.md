@@ -60,11 +60,11 @@ npm run deploy    # Build + deploy to Cloudflare
 **Viewport model:** Core math in `scroll-engine.ts`, split across two independent axes:
 
 - **Vertical = linear pan.** The viewport is the plain interval `[bottom, bottom + span]`, and `valueToFraction` maps it linearly (0 = top = large values). Vertical scroll/swipe moves `bottom`.
-- **Horizontal = logarithmic zoom.** `spanExp` is the log₁₀ of the visible span; a rightward swipe decreases it (zoom in). The bottom edge is the zoom anchor, so a `0–1000` window becomes `0–100`, not `450–550`.
+- **Horizontal = logarithmic zoom.** `spanExp` is the log₁₀ of the visible span; a rightward swipe decreases it (zoom in). Zoom is anchored under the pointer (`zoomAnchoredBottom`), so whatever sits beneath the finger stays put while everything else spreads around it.
 
-Drags lock to their dominant axis (`dominantAxis`) so a diagonal swipe never zooms and pans at once. Graduations come from `niceStep` (round 1/2/5 × 10ⁿ steps), shared by the vertical gridlines and the bottom ruler.
+Both axes apply on every input event — there is no axis lock, so a diagonal swipe zooms and pans at once. Graduations come from `niceStep` (round 1/2/5 × 10ⁿ steps), shared by the vertical gridlines and the bottom ruler.
 
-**Bottom ruler:** `scale-ruler.ts` mirrors the vertical axis horizontally — the same tick values, laid left-to-right. Zooming spreads its graduations apart and re-labels them. Only every nth label is drawn (`labelStride`) so numbers never collide. The vertical gridlines are deliberately unlabelled; the ruler owns the numbers.
+**Bottom ruler:** `scale-ruler.ts` mirrors the vertical axis horizontally, using `valueToFraction` so it runs the same way round — large values on the left. Zooming spreads its graduations apart and re-labels them. Only every nth label is drawn (`labelStride`) so numbers never collide. The vertical gridlines are deliberately unlabelled; the ruler owns the numbers.
 
 **Animation loop:** `requestAnimationFrame` with exponential easing: `current += (target - current) * 0.12`, applied to `spanExp` and `bottom` independently. The loop only writes `transform`/`opacity`/`display` — element creation and text layout stay out of it. Crowded cards are left to overlap on purpose: zooming in is what pulls them apart, so nothing is culled except what falls off-screen.
 

@@ -9,7 +9,7 @@ import {
   clampSpanExp,
   clampBottom,
   topValue,
-  dominantAxis,
+  zoomAnchoredBottom,
 } from "./scroll-engine";
 
 const historyMeta = {
@@ -141,16 +141,35 @@ describe("hueForExponent", () => {
   });
 });
 
-describe("dominantAxis", () => {
-  it("treats a mostly-sideways drag as horizontal", () => {
-    expect(dominantAxis(100, -20)).toBe("horizontal");
+describe("zoomAnchoredBottom", () => {
+  it("holds the anchored value in place while zooming", () => {
+    const vp = getViewport(3, 0); // 0 – 1000
+    for (const fraction of [0, 0.25, 0.5, 1]) {
+      const anchorValue = vp.bottom + (1 - fraction) * vp.span;
+      const bottom = zoomAnchoredBottom(vp, 100, fraction);
+      const zoomed = getViewport(2, bottom);
+      expect(valueToFraction(anchorValue, zoomed)).toBeCloseTo(fraction);
+    }
   });
 
-  it("treats a mostly-vertical drag as vertical", () => {
-    expect(dominantAxis(20, -100)).toBe("vertical");
+  it("anchoring at the bottom edge turns 0-1000 into 0-100", () => {
+    const bottom = zoomAnchoredBottom(getViewport(3, 0), 100, 1);
+    expect(bottom).toBeCloseTo(0);
   });
 
-  it("favours vertical on a perfect diagonal", () => {
-    expect(dominantAxis(50, 50)).toBe("vertical");
+  it("anchoring at the top edge turns 0-1000 into 900-1000", () => {
+    const bottom = zoomAnchoredBottom(getViewport(3, 0), 100, 0);
+    expect(bottom).toBeCloseTo(900);
+  });
+
+  it("anchoring mid-screen splits the difference", () => {
+    const bottom = zoomAnchoredBottom(getViewport(3, 0), 100, 0.5);
+    expect(bottom).toBeCloseTo(450); // 450 – 550, centred on 500
+  });
+
+  it("works while zooming out too", () => {
+    const vp = getViewport(2, 450); // 450 – 550
+    const bottom = zoomAnchoredBottom(vp, 1000, 0.5);
+    expect(bottom).toBeCloseTo(0);
   });
 });
