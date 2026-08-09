@@ -47,6 +47,19 @@ export function hueForExponent(spanExp: number, meta: ScaleMeta): number {
   return 270 - progress * 240;
 }
 
+/**
+ * Position on the fixed overview bar (0=top, 1=bottom), which always spans the
+ * whole scale. Logarithmic, so the highlighted window stays visible even when
+ * the linear viewport covers a millionth of the range.
+ */
+export function overviewFraction(value: number, meta: ScaleMeta): number {
+  const minExp = meta.minExponent;
+  const maxExp = meta.maxExponent + TOP_HEADROOM;
+  const exponent = Math.log10(Math.max(value, 10 ** minExp));
+  const progress = (exponent - minExp) / (maxExp - minExp);
+  return 1 - Math.max(0, Math.min(1, progress));
+}
+
 /** Pick a round step (1, 2 or 5 × 10ⁿ) that yields roughly `count` graduations */
 export function niceStep(span: number, count: number): number {
   if (!(span > 0) || count < 1) return 0;

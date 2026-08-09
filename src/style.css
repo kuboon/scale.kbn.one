@@ -174,9 +174,10 @@ body {
   overflow: hidden;
 }
 
+/* The second of the two vertical lines: the detail axis */
 .explorer-line {
   position: absolute;
-  left: 1.5rem;
+  left: 2.75rem;
   top: 0;
   bottom: 0;
   width: 2px;
@@ -193,7 +194,7 @@ body {
 .scale-card {
   position: absolute;
   top: 0;
-  left: 2.5rem;
+  left: 3.75rem;
   right: 1rem;
   padding: 1.25rem;
   border-radius: 0.75rem;
@@ -254,7 +255,7 @@ body {
 .tick-mark {
   position: absolute;
   top: 0;
-  left: 1.5rem;
+  left: 2.75rem;
   width: 20px;
   height: 1px;
   background: rgba(255, 255, 255, 0.15);
@@ -263,71 +264,95 @@ body {
   will-change: transform;
 }
 
-/* ============ Bottom Scale Ruler ============ */
+/* ============ Overview Bar & Readout ============ */
 
-.scale-ruler {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  padding: 0.7rem 1.5rem 1.2rem;
-  background: linear-gradient(to top, var(--bg-color) 70%, transparent);
+.scale-chrome {
   /* the whole screen is the swipe surface — never swallow a gesture */
   pointer-events: none;
 }
 
-.scale-ruler-readout {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 0.6rem;
-  margin-bottom: 0.6rem;
+/* The first of the two vertical lines: the whole scale, fixed */
+.overview {
+  position: fixed;
+  left: 1.1rem;
+  top: var(--top-pad);
+  bottom: var(--bottom-pad);
+  width: 4px;
+  z-index: 90;
+}
+
+.overview-track {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  border-radius: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgba(167, 139, 250, 0.22),
+    rgba(56, 189, 248, 0.22),
+    rgba(16, 185, 129, 0.22)
+  );
+}
+
+/* The slice the detail axis is currently showing */
+.overview-window {
+  position: absolute;
+  top: 0;
+  left: -2px;
+  right: -2px;
+  height: 0;
+  border-radius: 4px;
+  background: var(--text-accent);
+  opacity: 0.9;
+  box-shadow: 0 0 6px var(--text-accent);
+  will-change: transform, height;
+}
+
+.overview-cap {
+  position: absolute;
+  left: 0;
+  font-size: 0.55rem;
+  font-family: "Courier New", monospace;
+  color: rgba(255, 255, 255, 0.35);
   white-space: nowrap;
 }
 
-.scale-ruler-exp {
+.overview-cap--top {
+  bottom: calc(100% + 0.35rem);
+}
+
+.overview-cap--bottom {
+  top: calc(100% + 0.35rem);
+}
+
+.scale-readout {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 1rem;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  white-space: nowrap;
+}
+
+.scale-readout-exp {
   font-size: 1.1rem;
   font-weight: 700;
   font-family: "Courier New", monospace;
   color: var(--text-accent);
 }
 
-.scale-ruler-readable {
+.scale-readout-readable {
   font-size: 0.75rem;
   color: var(--text-secondary);
-}
-
-.scale-ruler-track {
-  position: relative;
-  height: 1.6rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.ruler-tick {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.25);
-  will-change: transform;
-}
-
-.ruler-tick--major {
-  height: 11px;
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.ruler-tick-label {
-  position: absolute;
-  top: 9px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.6rem;
-  font-family: "Courier New", monospace;
-  color: rgba(255, 255, 255, 0.55);
-  white-space: nowrap;
 }
 
 .boundary-flash {
@@ -379,11 +404,11 @@ body {
   }
 
   .explorer-line {
-    left: 2.5rem;
+    left: 3.75rem;
   }
 
   .scale-card {
-    left: 3.5rem;
+    left: 4.75rem;
   }
 
   .scale-card::before {
@@ -391,6 +416,10 @@ body {
   }
 
   .tick-mark {
-    left: 2.5rem;
+    left: 3.75rem;
+  }
+
+  .overview {
+    left: 2rem;
   }
 }

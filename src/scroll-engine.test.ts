@@ -10,6 +10,7 @@ import {
   clampBottom,
   topValue,
   zoomAnchoredBottom,
+  overviewFraction,
 } from "./scroll-engine";
 
 const historyMeta = {
@@ -138,6 +139,36 @@ describe("hueForExponent", () => {
   it("clamps beyond the declared range", () => {
     expect(hueForExponent(-5, historyMeta)).toBe(270);
     expect(hueForExponent(50, historyMeta)).toBe(30);
+  });
+});
+
+describe("overviewFraction", () => {
+  it("puts the top of the scale at the top of the bar", () => {
+    expect(overviewFraction(topValue(historyMeta), historyMeta)).toBeCloseTo(0);
+  });
+
+  it("puts the bottom of the scale — and 現在 — at the foot of the bar", () => {
+    expect(overviewFraction(10 ** historyMeta.minExponent, historyMeta)).toBeCloseTo(1);
+    expect(overviewFraction(0, historyMeta)).toBeCloseTo(1);
+  });
+
+  it("is logarithmic, so a deep zoom still marks a visible slice", () => {
+    // A 10³ window at the bottom of a 10¹⁰ scale is invisible on a linear bar
+    // (0.00001% of it) but covers a readable chunk of a log one.
+    const slice = overviewFraction(1e3, historyMeta) - overviewFraction(1e4, historyMeta);
+    expect(slice).toBeGreaterThan(0.05);
+  });
+
+  it("decreases monotonically as values grow", () => {
+    const fractions = [1, 1e2, 1e5, 1e8, 1e10].map((v) => overviewFraction(v, historyMeta));
+    for (let i = 1; i < fractions.length; i++) {
+      expect(fractions[i]).toBeLessThan(fractions[i - 1]);
+    }
+  });
+
+  it("clamps beyond the scale instead of running off the bar", () => {
+    expect(overviewFraction(1e30, historyMeta)).toBe(0);
+    expect(overviewFraction(-5, historyMeta)).toBe(1);
   });
 });
 

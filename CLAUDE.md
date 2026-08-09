@@ -44,7 +44,7 @@ npm run deploy    # Build + deploy to Cloudflare
     ├── landing.ts          # Landing page with scale selection cards
     ├── explorer.ts         # Main interactive explorer (scroll, touch, animation)
     ├── scroll-engine.ts    # Linear viewport math, zoom clamping, tick generation
-    ├── scale-ruler.ts      # Bottom horizontal ruler (graduations + zoom readout)
+    ├── scale-overview.ts   # Left overview bar (whole scale + visible slice) + zoom readout
     ├── format.ts           # Number formatting (Japanese numerals, superscript)
     ├── types.ts            # TypeScript interfaces (ScaleMeta, ScaleEntry, ScaleData)
     ├── style.css           # All styles (CSS variables, responsive, animations)
@@ -64,7 +64,14 @@ npm run deploy    # Build + deploy to Cloudflare
 
 Both axes apply on every input event — there is no axis lock, so a diagonal swipe zooms and pans at once. Graduations come from `niceStep` (round 1/2/5 × 10ⁿ steps), shared by the vertical gridlines and the bottom ruler.
 
-**Bottom ruler:** `scale-ruler.ts` mirrors the vertical axis horizontally, using `valueToFraction` so it runs the same way round — large values on the left. Zooming spreads its graduations apart and re-labels them. Only every nth label is drawn (`labelStride`) so numbers never collide. The vertical gridlines are deliberately unlabelled; the ruler owns the numbers.
+**Two vertical lines on the left:**
+
+- **Line 1 — `scale-overview.ts`.** A fixed bar covering the whole scale end to end, captioned with both extremes (`約138億年前` … `現在`). The slice line 2 is currently showing is highlighted on it, so you can always see which part of the whole you are in.
+- **Line 2 — `.explorer-line`.** The detail axis itself, carrying the cards and the (unlabelled) gridlines.
+
+The overview is **logarithmic** while the detail axis is linear. It has to be: on a linear overview everything below 10⁹ collapses into the bottom 5% of the bar, so the marker would say nothing about where you are. `overviewFraction` handles the mapping and clamps at both ends. At deep zoom the highlighted slice is far below a pixel tall, so it floors at `MIN_WINDOW_PX` and reads as a position marker rather than an extent — position is the useful signal at that range anyway.
+
+The zoom readout (`10⁺⁷ 年前` + a human-readable gloss) lives in the same module, as a pill at the bottom centre.
 
 **Animation loop:** `requestAnimationFrame` with exponential easing: `current += (target - current) * 0.12`, applied to `spanExp` and `bottom` independently. The loop only writes `transform`/`opacity`/`display` — element creation and text layout stay out of it. Crowded cards are left to overlap on purpose: zooming in is what pulls them apart, so nothing is culled except what falls off-screen.
 

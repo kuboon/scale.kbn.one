@@ -8,7 +8,7 @@ import {
   clampBottom,
   zoomAnchoredBottom,
 } from "./scroll-engine.ts";
-import { createRuler, updateRuler, destroyRuler } from "./scale-ruler.ts";
+import { createOverview, updateOverview, destroyOverview } from "./scale-overview.ts";
 import { toJapaneseLabel } from "./format.ts";
 
 let cleanup: (() => void) | null = null;
@@ -16,12 +16,13 @@ let cleanup: (() => void) | null = null;
 interface CardInfo {
   el: HTMLElement;
   value: number;
+  label: string;
 }
 
 const MAX_TICKS = 20;
 const AXIS_TICKS = 10;
 const TOP_PAD = 120;
-const BOTTOM_PAD = 200;
+const BOTTOM_PAD = 120;
 
 export function renderExplorer(container: HTMLElement, data: ScaleData) {
   const { meta } = data;
@@ -47,6 +48,10 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
 
   const explorerEl = container.querySelector(".explorer")! as HTMLElement;
   const viewport = container.querySelector(".explorer-viewport")! as HTMLElement;
+
+  // Single source of truth for the usable band — the overview track lines up with it
+  explorerEl.style.setProperty("--top-pad", `${TOP_PAD}px`);
+  explorerEl.style.setProperty("--bottom-pad", `${BOTTOM_PAD}px`);
 
   let usableH = Math.max(1, viewport.clientHeight - TOP_PAD - BOTTOM_PAD);
 
@@ -75,13 +80,14 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     cards.push({
       el,
       value: entry.value > 0 ? entry.value * 10 ** entry.exponent : 10 ** entry.exponent,
+      label,
     });
   }
   cards.sort((a, b) => b.value - a.value);
 
-  // Create bottom ruler
-  const ruler = createRuler(meta);
-  explorerEl.appendChild(ruler);
+  // Create the fixed overview bar, captioned with the ends of the scale
+  const overview = createOverview(cards[0].label, cards[cards.length - 1].label);
+  explorerEl.appendChild(overview);
 
   // --- Input handling ---
   const ZOOM_PER_PIXEL = 0.005; // exponents per pixel of horizontal travel
@@ -167,7 +173,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
       if (!c.el.classList.contains("visible")) c.el.classList.add("visible");
     }
 
-    // Update ticks — the ruler mirrors the same graduations horizontally
+    // Update the detail axis gridlines
     const ticks = computeTicks(vp, AXIS_TICKS);
     for (let i = 0; i < MAX_TICKS; i++) {
       const tel = tickPool[i];
@@ -186,8 +192,8 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
       }
     }
 
-    // Update ruler & hue
-    updateRuler(meta, vp, ticks);
+    // Update overview & hue
+    updateOverview(meta, vp);
     const hue = hueForExponent(currentSpanExp, meta);
     document.documentElement.style.setProperty("--bg-hue", String(hue));
 
@@ -210,5 +216,5 @@ export function destroyExplorer() {
     cleanup();
     cleanup = null;
   }
-  destroyRuler();
+  destroyOverview();
 }

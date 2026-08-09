@@ -31,7 +31,9 @@ export function toJapaneseLabel(value: number, exponent: number, unitSymbol: str
 
   const num = value * 10 ** exponent;
 
-  if (num < 1) {
+  // Japanese counters stop making sense past 垓 (10²⁰) — 8.8×10²⁷ would come out
+  // as "88000千垓" — so fall back to scientific notation at both extremes.
+  if (num < 1 || num >= 1e21) {
     const e = Math.floor(Math.log10(num));
     const v = +(num / 10 ** e).toPrecision(3);
     const vStr = v === 1 ? "" : `${v}×`;
