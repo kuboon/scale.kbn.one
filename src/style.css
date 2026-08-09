@@ -321,64 +321,6 @@ body {
   top: calc(100% + 0.35rem);
 }
 
-.scale-readout {
-  position: fixed;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  padding: 0.6rem 1.5rem;
-  border-radius: 1rem;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--card-border);
-  white-space: nowrap;
-}
-
-.scale-readout-exp {
-  font-size: 1.1rem;
-  font-weight: 700;
-  font-family: "Courier New", monospace;
-  color: var(--text-accent);
-}
-
-.scale-readout-readable {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.boundary-flash {
-  position: absolute;
-  top: -2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.9rem;
-  font-weight: 700;
-  font-family: "Courier New", monospace;
-  color: var(--text-accent);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.boundary-flash--active {
-  animation: boundary-pop 0.6s ease-out forwards;
-}
-
-@keyframes boundary-pop {
-  0% {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(-50%) scale(1.5) translateY(-1rem);
-  }
-}
-
 /* ============ Responsive ============ */
 
 @media (min-width: 768px) {

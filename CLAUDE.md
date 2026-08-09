@@ -44,7 +44,7 @@ npm run deploy    # Build + deploy to Cloudflare
     ├── landing.ts          # Landing page with scale selection cards
     ├── explorer.ts         # Main interactive explorer (scroll, touch, animation)
     ├── scroll-engine.ts    # Linear viewport math, zoom clamping, tick generation
-    ├── scale-overview.ts   # Left overview bar (whole scale + visible slice) + zoom readout
+    ├── scale-overview.ts   # Left overview bar (whole scale + visible slice)
     ├── format.ts           # Number formatting (Japanese numerals, superscript)
     ├── types.ts            # TypeScript interfaces (ScaleMeta, ScaleEntry, ScaleData)
     ├── style.css           # All styles (CSS variables, responsive, animations)
@@ -71,7 +71,6 @@ Both axes apply on every input event — there is no axis lock, so a diagonal sw
 
 The overview bar is **logarithmic** (one band per decade), and the visible window is drawn on it as a **brightness field, not a hard-edged rectangle**: each decade lights up by the share of screen pixels it currently occupies (`decadeOccupancy`, shaped by `BRIGHTNESS_GAIN`/`GAMMA` in `scale-overview.ts`). Hard edges were the flaw in both earlier designs — a log-mapped lower edge lurches the moment `bottom` leaves zero (log 0 = −∞), and a linear bar can't show position at depth at all. Occupancy varies continuously with the viewport, so no gesture can make the marker jump; one decade of zoom slides the bright band a fixed distance down the bar, and the faint tail below it is the honest rendering of "technically on screen but crushed". At deep zoom the marker responds to zoom rather than sub-decade pans — on a log bar your order of magnitude *is* your position.
 
-The zoom readout (`10⁺⁷ 年前` + a human-readable gloss) lives in the same module, as a pill at the bottom centre.
 
 **Animation loop:** `requestAnimationFrame` with exponential easing: `current += (target - current) * 0.12`, applied to `spanExp` and `bottom` independently. The loop only writes `transform`/`opacity`/`display` (plus the overview bar's gradient string, repainting only that 4px element) — element creation and text layout stay out of it. Crowded cards are left to overlap on purpose: zooming in is what pulls them apart, so nothing is culled except what falls off-screen.
 
