@@ -152,11 +152,22 @@ describe("overviewFraction", () => {
     expect(overviewFraction(0, historyMeta)).toBeCloseTo(1);
   });
 
-  it("is logarithmic, so a deep zoom still marks a visible slice", () => {
-    // A 10³ window at the bottom of a 10¹⁰ scale is invisible on a linear bar
-    // (0.00001% of it) but covers a readable chunk of a log one.
-    const slice = overviewFraction(1e3, historyMeta) - overviewFraction(1e4, historyMeta);
-    expect(slice).toBeGreaterThan(0.05);
+  it("is linear, so the marker tracks the pan proportionally", () => {
+    const max = topValue(historyMeta);
+    expect(overviewFraction(max / 2, historyMeta)).toBeCloseTo(0.5);
+    expect(overviewFraction(max / 4, historyMeta)).toBeCloseTo(0.75);
+  });
+
+  it("does not lurch when a small zoom lifts the window off zero", () => {
+    // Regression: on a log bar, nudging `bottom` off zero threw the lower edge
+    // from 100% to ~12% of the bar for a 10px swipe.
+    const wide = getViewport(Math.log10(topValue(historyMeta)), 0);
+    const nextSpan = wide.span * 0.99; // a 1% zoom-in, anchored mid-screen
+    const narrowBottom = zoomAnchoredBottom(wide, nextSpan, 0.5);
+
+    const before = overviewFraction(wide.bottom, historyMeta);
+    const after = overviewFraction(narrowBottom, historyMeta);
+    expect(Math.abs(after - before)).toBeLessThan(0.02);
   });
 
   it("decreases monotonically as values grow", () => {

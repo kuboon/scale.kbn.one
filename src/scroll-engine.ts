@@ -49,14 +49,15 @@ export function hueForExponent(spanExp: number, meta: ScaleMeta): number {
 
 /**
  * Position on the fixed overview bar (0=top, 1=bottom), which always spans the
- * whole scale. Logarithmic, so the highlighted window stays visible even when
- * the linear viewport covers a millionth of the range.
+ * whole scale.
+ *
+ * Linear, to match the detail axis. A mapping that stretches the low end (log,
+ * or any root) also stretches motion down there: nudging `bottom` off zero by a
+ * thousandth of the range would throw the marker a third of the way up the bar.
+ * Linear is the only mapping where the marker moves in proportion to the swipe.
  */
 export function overviewFraction(value: number, meta: ScaleMeta): number {
-  const minExp = meta.minExponent;
-  const maxExp = meta.maxExponent + TOP_HEADROOM;
-  const exponent = Math.log10(Math.max(value, 10 ** minExp));
-  const progress = (exponent - minExp) / (maxExp - minExp);
+  const progress = value / topValue(meta);
   return 1 - Math.max(0, Math.min(1, progress));
 }
 

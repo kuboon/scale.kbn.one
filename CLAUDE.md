@@ -69,7 +69,7 @@ Both axes apply on every input event — there is no axis lock, so a diagonal sw
 - **Line 1 — `scale-overview.ts`.** A fixed bar covering the whole scale end to end, captioned with both extremes (`約138億年前` … `現在`). The slice line 2 is currently showing is highlighted on it, so you can always see which part of the whole you are in.
 - **Line 2 — `.explorer-line`.** The detail axis itself, carrying the cards and the (unlabelled) gridlines.
 
-The overview is **logarithmic** while the detail axis is linear. It has to be: on a linear overview everything below 10⁹ collapses into the bottom 5% of the bar, so the marker would say nothing about where you are. `overviewFraction` handles the mapping and clamps at both ends. At deep zoom the highlighted slice is far below a pixel tall, so it floors at `MIN_WINDOW_PX` and reads as a position marker rather than an extent — position is the useful signal at that range anyway.
+`overviewFraction` maps the bar **linearly**, matching the detail axis, and clamps at both ends. This matters: a mapping that stretches the low end (log, or any root) stretches motion down there too, so nudging `bottom` off zero by a thousandth of the range would throw the lower edge a third of the way up the bar on a swipe the user can barely feel. Linear is the only mapping where the marker moves in proportion to the gesture. The cost is that deep zooms pin the marker near the foot — accepted, and `MIN_WINDOW_PX` keeps it visible as a position marker once the slice falls below a pixel.
 
 The zoom readout (`10⁺⁷ 年前` + a human-readable gloss) lives in the same module, as a pill at the bottom centre.
 
