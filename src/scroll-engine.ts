@@ -48,17 +48,38 @@ export function hueForExponent(spanExp: number, meta: ScaleMeta): number {
 }
 
 /**
- * Position on the fixed overview bar (0=top, 1=bottom), which always spans the
- * whole scale.
+ * The overview bar is logarithmic, one band per decade. The visible window is
+ * drawn on it as a brightness field, not a hard-edged rectangle: each decade
+ * lights up by the share of screen pixels it currently occupies.
  *
- * Linear, to match the detail axis. A mapping that stretches the low end (log,
- * or any root) also stretches motion down there: nudging `bottom` off zero by a
- * thousandth of the range would throw the marker a third of the way up the bar.
- * Linear is the only mapping where the marker moves in proportion to the swipe.
+ * Hard edges were the problem with both earlier bars. A log-mapped lower edge
+ * jumps wildly the moment `bottom` leaves zero (log 0 = -∞); a linear bar can't
+ * show position at depth at all. Occupancy varies continuously with the
+ * viewport, so no gesture can make the marker lurch — and on a log bar, one
+ * decade of zoom moves the bright band a fixed distance.
  */
-export function overviewFraction(value: number, meta: ScaleMeta): number {
-  const progress = value / topValue(meta);
-  return 1 - Math.max(0, Math.min(1, progress));
+
+/** Integer decade grid [d, d+1) covering the whole scale, low to high */
+export function overviewDecades(meta: ScaleMeta): number[] {
+  const min = Math.floor(meta.minExponent);
+  const max = Math.ceil(meta.maxExponent + TOP_HEADROOM);
+  const decades: number[] = [];
+  for (let d = min; d < max; d++) decades.push(d);
+  return decades;
+}
+
+/** Share of the screen (0..1) the decade [10^d, 10^(d+1)] occupies right now */
+export function decadeOccupancy(vp: ViewportState, d: number): number {
+  const lo = Math.max(vp.bottom, 10 ** d);
+  const hi = Math.min(vp.top, 10 ** (d + 1));
+  return Math.max(0, hi - lo) / vp.span;
+}
+
+/** Position of an exponent on the overview bar (0=top=large values, 1=bottom) */
+export function exponentToOverviewFraction(exp: number, meta: ScaleMeta): number {
+  const min = meta.minExponent;
+  const max = meta.maxExponent + TOP_HEADROOM;
+  return 1 - Math.max(0, Math.min(1, (exp - min) / (max - min)));
 }
 
 /** Pick a round step (1, 2 or 5 × 10ⁿ) that yields roughly `count` graduations */

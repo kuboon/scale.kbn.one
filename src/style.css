@@ -294,18 +294,14 @@ body {
   );
 }
 
-/* The slice the detail axis is currently showing */
+/* The slice the detail axis is currently showing, as a brightness gradient:
+   each decade glows by how much of the screen it occupies (background is
+   rebuilt per frame in scale-overview.ts) */
 .overview-window {
   position: absolute;
-  top: 0;
-  left: -2px;
-  right: -2px;
-  height: 0;
+  inset: 0 -2px;
   border-radius: 4px;
-  background: var(--text-accent);
-  opacity: 0.9;
-  box-shadow: 0 0 6px var(--text-accent);
-  will-change: transform, height;
+  will-change: background;
 }
 
 .overview-cap {

@@ -10,7 +10,9 @@ import {
   clampBottom,
   topValue,
   zoomAnchoredBottom,
-  overviewFraction,
+  overviewDecades,
+  decadeOccupancy,
+  exponentToOverviewFraction,
 } from "./scroll-engine";
 
 const historyMeta = {
@@ -142,44 +144,67 @@ describe("hueForExponent", () => {
   });
 });
 
-describe("overviewFraction", () => {
-  it("puts the top of the scale at the top of the bar", () => {
-    expect(overviewFraction(topValue(historyMeta), historyMeta)).toBeCloseTo(0);
+describe("decadeOccupancy", () => {
+  it("splits a bottom-anchored window across decades by screen share", () => {
+    const vp = getViewport(3, 0); // 0 - 1000
+    expect(decadeOccupancy(vp, 2)).toBeCloseTo(0.9); // 100 - 1000
+    expect(decadeOccupancy(vp, 1)).toBeCloseTo(0.09); // 10 - 100
+    expect(decadeOccupancy(vp, 0)).toBeCloseTo(0.009);
+    expect(decadeOccupancy(vp, 3)).toBe(0); // above the window
   });
 
-  it("puts the bottom of the scale — and 現在 — at the foot of the bar", () => {
-    expect(overviewFraction(10 ** historyMeta.minExponent, historyMeta)).toBeCloseTo(1);
-    expect(overviewFraction(0, historyMeta)).toBeCloseTo(1);
-  });
-
-  it("is linear, so the marker tracks the pan proportionally", () => {
-    const max = topValue(historyMeta);
-    expect(overviewFraction(max / 2, historyMeta)).toBeCloseTo(0.5);
-    expect(overviewFraction(max / 4, historyMeta)).toBeCloseTo(0.75);
-  });
-
-  it("does not lurch when a small zoom lifts the window off zero", () => {
-    // Regression: on a log bar, nudging `bottom` off zero threw the lower edge
-    // from 100% to ~12% of the bar for a 10px swipe.
-    const wide = getViewport(Math.log10(topValue(historyMeta)), 0);
-    const nextSpan = wide.span * 0.99; // a 1% zoom-in, anchored mid-screen
-    const narrowBottom = zoomAnchoredBottom(wide, nextSpan, 0.5);
-
-    const before = overviewFraction(wide.bottom, historyMeta);
-    const after = overviewFraction(narrowBottom, historyMeta);
-    expect(Math.abs(after - before)).toBeLessThan(0.02);
-  });
-
-  it("decreases monotonically as values grow", () => {
-    const fractions = [1, 1e2, 1e5, 1e8, 1e10].map((v) => overviewFraction(v, historyMeta));
-    for (let i = 1; i < fractions.length; i++) {
-      expect(fractions[i]).toBeLessThan(fractions[i - 1]);
+  it("keeps every decade lit while the window still reaches zero", () => {
+    const vp = getViewport(Math.log10(topValue(historyMeta)), 0);
+    for (const d of overviewDecades(historyMeta)) {
+      expect(decadeOccupancy(vp, d)).toBeGreaterThan(0);
     }
   });
 
-  it("clamps beyond the scale instead of running off the bar", () => {
-    expect(overviewFraction(1e30, historyMeta)).toBe(0);
-    expect(overviewFraction(-5, historyMeta)).toBe(1);
+  it("concentrates almost all brightness in the window's top two decades", () => {
+    const vp = getViewport(3, 0);
+    const total = overviewDecades(historyMeta)
+      .map((d) => decadeOccupancy(vp, d))
+      .reduce((a, b) => a + b, 0);
+    expect(decadeOccupancy(vp, 2) + decadeOccupancy(vp, 1)).toBeGreaterThan(total * 0.98);
+  });
+
+  it("changes continuously through the old lurch case (small zoom off zero)", () => {
+    // Regression: with a hard-edged window on a log bar, this 1% zoom threw the
+    // lower edge from the foot of the bar to ~88% of the way up.
+    const wide = getViewport(Math.log10(topValue(historyMeta)), 0);
+    const nextSpan = wide.span * 0.99;
+    const bottom = zoomAnchoredBottom(wide, nextSpan, 0.5);
+    const zoomed = getViewport(Math.log10(nextSpan), bottom);
+
+    for (const d of overviewDecades(historyMeta)) {
+      const delta = Math.abs(decadeOccupancy(zoomed, d) - decadeOccupancy(wide, d));
+      expect(delta).toBeLessThan(0.02);
+    }
+  });
+
+  it("slides the bright band down one decade per decade of zoom", () => {
+    const brightest = (vp: ReturnType<typeof getViewport>) =>
+      overviewDecades(historyMeta).reduce((best, d) =>
+        decadeOccupancy(vp, d) > decadeOccupancy(vp, best) ? d : best,
+      );
+    expect(brightest(getViewport(5, 0))).toBe(4);
+    expect(brightest(getViewport(4, 0))).toBe(3);
+    expect(brightest(getViewport(3, 0))).toBe(2);
+  });
+});
+
+describe("exponentToOverviewFraction", () => {
+  it("maps the ends of the scale to the ends of the bar", () => {
+    expect(exponentToOverviewFraction(historyMeta.minExponent, historyMeta)).toBe(1);
+    expect(exponentToOverviewFraction(historyMeta.maxExponent + 0.5, historyMeta)).toBe(0);
+  });
+
+  it("descends as exponents grow, and clamps beyond the scale", () => {
+    const mid = exponentToOverviewFraction(5, historyMeta);
+    expect(mid).toBeGreaterThan(0);
+    expect(mid).toBeLessThan(1);
+    expect(exponentToOverviewFraction(99, historyMeta)).toBe(0);
+    expect(exponentToOverviewFraction(-99, historyMeta)).toBe(1);
   });
 });
 

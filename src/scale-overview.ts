@@ -1,22 +1,30 @@
 import { ScaleMeta } from "./types";
-import { ViewportState, overviewFraction } from "./scroll-engine";
+import {
+  ViewportState,
+  overviewDecades,
+  decadeOccupancy,
+  exponentToOverviewFraction,
+} from "./scroll-engine";
 import { superscript, humanReadable } from "./format";
 
 let rootEl: HTMLElement | null = null;
-let trackEl: HTMLElement | null = null;
 let windowEl: HTMLElement | null = null;
 let expEl: HTMLElement | null = null;
 let readableEl: HTMLElement | null = null;
 let flashEl: HTMLElement | null = null;
 let prevIntExponent: number | null = null;
 
-// At deep zoom the window is far below a pixel tall; keep it as a position marker
-const MIN_WINDOW_PX = 5;
+// A decade holding ≥10% of the screen is fully bright…
+const BRIGHTNESS_GAIN = 10;
+// …and a sub-linear curve lifts the faint tail, so the fade-out below the
+// bright band reads as a gradient rather than a cliff.
+const BRIGHTNESS_GAMMA = 0.3;
 
 /**
- * The leftmost of the two vertical lines: a fixed bar covering the whole scale,
- * with the slice the detail axis (the second line) is currently showing
- * highlighted on it. Logarithmic, so that slice stays visible at any zoom.
+ * The leftmost of the two vertical lines: a fixed logarithmic bar covering the
+ * whole scale, with the slice the detail axis (the second line) is currently
+ * showing drawn on it as a brightness gradient — see scroll-engine.ts for why
+ * a hard-edged window can't work here.
  *
  * Also owns the zoom readout, which names the magnitude the detail axis spans.
  */
@@ -36,7 +44,6 @@ export function createOverview(topLabel: string, bottomLabel: string): HTMLEleme
     </div>
   `;
 
-  trackEl = rootEl.querySelector(".overview-track")!;
   windowEl = rootEl.querySelector(".overview-window")!;
   expEl = rootEl.querySelector(".scale-readout-exp")!;
   readableEl = rootEl.querySelector(".scale-readout-readable")!;
@@ -53,19 +60,23 @@ export function createOverview(topLabel: string, bottomLabel: string): HTMLEleme
 }
 
 export function updateOverview(meta: ScaleMeta, vp: ViewportState) {
-  if (!rootEl || !trackEl || !windowEl) return;
+  if (!rootEl || !windowEl) return;
 
-  const height = trackEl.clientHeight;
-  const spanPx = Math.max(
-    MIN_WINDOW_PX,
-    (overviewFraction(vp.bottom, meta) - overviewFraction(vp.top, meta)) * height,
-  );
-  const y = Math.min(overviewFraction(vp.top, meta) * height, height - spanPx);
-
-  // Height rather than scaleY: scaling would stretch the glow and corner radius
-  // with it. One absolutely-positioned element, so the layout cost is confined.
-  windowEl.style.transform = `translateY(${Math.max(0, y)}px)`;
-  windowEl.style.height = `${spanPx}px`;
+  // One gradient stop per decade, at the decade band's midpoint on the bar,
+  // ordered top (large values) to bottom. Rebuilding a ~dozen-stop gradient
+  // string per frame repaints only this 4px-wide element.
+  const decades = overviewDecades(meta);
+  const stops: string[] = [];
+  for (let i = decades.length - 1; i >= 0; i--) {
+    const d = decades[i];
+    const alpha = Math.min(1, (decadeOccupancy(vp, d) * BRIGHTNESS_GAIN) ** BRIGHTNESS_GAMMA);
+    const mid =
+      (exponentToOverviewFraction(d + 1, meta) + exponentToOverviewFraction(d, meta)) / 2;
+    stops.push(
+      `color-mix(in srgb, var(--text-accent) ${(alpha * 100).toFixed(1)}%, transparent) ${(mid * 100).toFixed(2)}%`,
+    );
+  }
+  windowEl.style.background = `linear-gradient(to bottom, ${stops.join(", ")})`;
 
   const rounded = Math.round(vp.spanExp);
   const sign = rounded >= 0 ? "+" : "";
@@ -85,7 +96,6 @@ export function updateOverview(meta: ScaleMeta, vp: ViewportState) {
 
 export function destroyOverview() {
   rootEl = null;
-  trackEl = null;
   windowEl = null;
   expEl = null;
   readableEl = null;
