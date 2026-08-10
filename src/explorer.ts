@@ -1,6 +1,14 @@
 import { ScaleData } from "./types.ts";
-import { getViewport, valueToFraction, hueForExponent, computeTicks } from "./scroll-engine.ts";
-import { createIndicator, updateIndicator, destroyIndicator } from "./scale-indicator.ts";
+import {
+  getViewport,
+  valueToFraction,
+  hueForExponent,
+  computeTicks,
+  clampSpanExp,
+  clampBottom,
+  zoomAnchoredBottom,
+} from "./scroll-engine.ts";
+import { createOverview, updateOverview, destroyOverview } from "./scale-overview.ts";
 import { toJapaneseLabel } from "./format.ts";
 
 let cleanup: (() => void) | null = null;
@@ -8,16 +16,22 @@ let cleanup: (() => void) | null = null;
 interface CardInfo {
   el: HTMLElement;
   value: number;
+  label: string;
 }
 
 const MAX_TICKS = 20;
+const AXIS_TICKS = 10;
 const TOP_PAD = 120;
-const BOTTOM_PAD = 200;
+const BOTTOM_PAD = 120;
 
 export function renderExplorer(container: HTMLElement, data: ScaleData) {
   const { meta } = data;
-  let currentExp = meta.maxExponent;
-  let targetExp = meta.maxExponent;
+
+  // Start fully zoomed out: the whole scale in one linear window
+  let targetSpanExp = clampSpanExp(meta.maxExponent + 1, meta);
+  let currentSpanExp = targetSpanExp;
+  let targetBottom = 0;
+  let currentBottom = 0;
   let rafId = 0;
 
   // Prevent body scroll
@@ -25,7 +39,7 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
 
   container.innerHTML = `
     <div class="explorer">
-      <a href="#" class="explorer-back">\u2190 戻る</a>
+      <a href="#" class="explorer-back">← 戻る</a>
       <div class="explorer-viewport">
         <div class="explorer-line"></div>
       </div>
@@ -35,17 +49,24 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
   const explorerEl = container.querySelector(".explorer")! as HTMLElement;
   const viewport = container.querySelector(".explorer-viewport")! as HTMLElement;
 
+  // Single source of truth for the usable band — the overview track lines up with it
+  explorerEl.style.setProperty("--top-pad", `${TOP_PAD}px`);
+  explorerEl.style.setProperty("--bottom-pad", `${BOTTOM_PAD}px`);
+
+  let usableH = Math.max(1, viewport.clientHeight - TOP_PAD - BOTTOM_PAD);
+
   // Create tick pool
   const tickPool: HTMLElement[] = [];
   for (let i = 0; i < MAX_TICKS; i++) {
+    // Unlabelled: the bottom ruler carries the numbers, and a label here would
+    // sit underneath the cards
     const tick = document.createElement("div");
     tick.className = "tick-mark";
-    tick.innerHTML = `<span class="tick-label"></span>`;
     viewport.appendChild(tick);
     tickPool.push(tick);
   }
 
-  // Create card elements (sorted by value descending = top to bottom on reversed axis)
+  // Create card elements, ordered top to bottom on the reversed axis
   const cards: CardInfo[] = [];
   for (const entry of data.entries) {
     const el = document.createElement("div");
@@ -59,40 +80,68 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
     cards.push({
       el,
       value: entry.value > 0 ? entry.value * 10 ** entry.exponent : 10 ** entry.exponent,
+      label,
     });
   }
+  cards.sort((a, b) => b.value - a.value);
 
-  // Create indicator
-  const indicator = createIndicator(meta);
-  explorerEl.appendChild(indicator);
+  // Create the fixed overview bar, captioned with the ends of the scale
+  const overview = createOverview(cards[0].label, cards[cards.length - 1].label);
+  explorerEl.appendChild(overview);
 
   // --- Input handling ---
-  const WHEEL_SENSITIVITY = 0.002;
-  const TOUCH_SENSITIVITY = 0.005;
-  let touchY = 0;
+  const ZOOM_PER_PIXEL = 0.005; // exponents per pixel of horizontal travel
+  const WHEEL_ZOOM_PER_PIXEL = 0.002;
 
-  function clampTarget() {
-    targetExp = Math.max(meta.minExponent, Math.min(meta.maxExponent, targetExp));
+  /** Where a pointer sits on the value axis: 0 = top, 1 = bottom */
+  function pointerFraction(clientY: number): number {
+    return Math.max(0, Math.min(1, (clientY - TOP_PAD) / usableH));
   }
 
+  /** Horizontal input zooms: rightward shrinks the span, anchored under the pointer */
+  function zoomAt(exponentDelta: number, clientY: number) {
+    const nextSpanExp = clampSpanExp(targetSpanExp + exponentDelta, meta);
+    if (nextSpanExp === targetSpanExp) return;
+
+    const nextSpan = 10 ** nextSpanExp;
+    const vp = getViewport(targetSpanExp, targetBottom);
+    const bottom = zoomAnchoredBottom(vp, nextSpan, pointerFraction(clientY));
+
+    targetSpanExp = nextSpanExp;
+    targetBottom = clampBottom(bottom, nextSpan, meta);
+  }
+
+  /** Vertical input pans linearly: positive pixels move toward the small end */
+  function panBy(pixels: number) {
+    const span = 10 ** targetSpanExp;
+    targetBottom = clampBottom(targetBottom - (pixels / usableH) * span, span, meta);
+  }
+
+  // Both axes always apply, so a diagonal gesture zooms and pans at once
   function onWheel(e: WheelEvent) {
     e.preventDefault();
-    // Scroll down (positive deltaY) → decrease exponent → zoom in
-    targetExp -= e.deltaY * WHEEL_SENSITIVITY;
-    clampTarget();
+    zoomAt(-e.deltaX * WHEEL_ZOOM_PER_PIXEL, e.clientY);
+    panBy(e.deltaY);
   }
 
+  let lastX = 0;
+  let lastY = 0;
+
   function onTouchStart(e: TouchEvent) {
-    touchY = e.touches[0].clientY;
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
   }
 
   function onTouchMove(e: TouchEvent) {
     e.preventDefault();
+    const x = e.touches[0].clientX;
     const y = e.touches[0].clientY;
-    const dy = touchY - y; // positive when swiping up = "scroll down"
-    touchY = y;
-    targetExp -= dy * TOUCH_SENSITIVITY;
-    clampTarget();
+
+    zoomAt(-(x - lastX) * ZOOM_PER_PIXEL, y);
+    panBy(lastY - y);
+
+    lastX = x;
+    lastY = y;
   }
 
   explorerEl.addEventListener("wheel", onWheel, { passive: false });
@@ -101,51 +150,51 @@ export function renderExplorer(container: HTMLElement, data: ScaleData) {
 
   // --- Animation loop ---
   function frame() {
-    currentExp += (targetExp - currentExp) * 0.12;
+    currentSpanExp += (targetSpanExp - currentSpanExp) * 0.12;
+    currentBottom += (targetBottom - currentBottom) * 0.12;
 
-    const vpHeight = viewport.clientHeight;
-    const usableH = vpHeight - TOP_PAD - BOTTOM_PAD;
-    const vp = getViewport(currentExp);
+    usableH = Math.max(1, viewport.clientHeight - TOP_PAD - BOTTOM_PAD);
+    const vp = getViewport(currentSpanExp, currentBottom);
 
-    // Update cards
+    // Update cards. Crowded cards are left to overlap on purpose — zooming in
+    // is what pulls them apart.
     for (const c of cards) {
-      const frac = valueToFraction(c.value, vp, meta);
-
-      if (frac >= -0.3 && frac <= 1.3) {
-        const y = TOP_PAD + frac * usableH;
-        c.el.style.display = "";
-        c.el.style.transform = `translateY(${y}px)`;
-        // Fade at edges
-        const edge = frac < 0 ? -frac / 0.3 : frac > 1 ? (frac - 1) / 0.3 : 0;
-        c.el.style.opacity = String(Math.max(0, 1 - edge));
-        if (!c.el.classList.contains("visible")) c.el.classList.add("visible");
-      } else {
+      const frac = valueToFraction(c.value, vp);
+      if (frac < -0.3 || frac > 1.3) {
         c.el.style.display = "none";
+        continue;
       }
+
+      c.el.style.display = "";
+      c.el.style.transform = `translateY(${TOP_PAD + frac * usableH}px)`;
+      // Fade at edges
+      const edge = frac < 0 ? -frac / 0.3 : frac > 1 ? (frac - 1) / 0.3 : 0;
+      c.el.style.opacity = String(Math.max(0, 1 - edge));
+      if (!c.el.classList.contains("visible")) c.el.classList.add("visible");
     }
 
-    // Update ticks
-    const ticks = computeTicks(vp.rangeMin, vp.rangeMax);
+    // Update the detail axis gridlines
+    const ticks = computeTicks(vp, AXIS_TICKS);
     for (let i = 0; i < MAX_TICKS; i++) {
       const tel = tickPool[i];
-      if (i < ticks.length) {
-        const frac = valueToFraction(ticks[i], vp, meta);
-        if (frac >= -0.05 && frac <= 1.05) {
-          const y = TOP_PAD + frac * usableH;
-          tel.style.display = "";
-          tel.style.transform = `translateY(${y}px)`;
-          tel.querySelector(".tick-label")!.textContent = formatTickLabel(ticks[i]);
-        } else {
-          tel.style.display = "none";
-        }
+      const value = ticks[i];
+      if (value === undefined) {
+        tel.style.display = "none";
+        continue;
+      }
+
+      const frac = valueToFraction(value, vp);
+      if (frac >= -0.05 && frac <= 1.05) {
+        tel.style.display = "";
+        tel.style.transform = `translateY(${TOP_PAD + frac * usableH}px)`;
       } else {
         tel.style.display = "none";
       }
     }
 
-    // Update indicator & hue
-    updateIndicator(meta, currentExp);
-    const hue = hueForExponent(currentExp, meta);
+    // Update overview & hue
+    updateOverview(meta, vp);
+    const hue = hueForExponent(currentSpanExp, meta);
     document.documentElement.style.setProperty("--bg-hue", String(hue));
 
     rafId = requestAnimationFrame(frame);
@@ -167,11 +216,5 @@ export function destroyExplorer() {
     cleanup();
     cleanup = null;
   }
-  destroyIndicator();
-}
-
-function formatTickLabel(value: number): string {
-  const exp = Math.floor(Math.log10(value));
-  const coeff = Math.round(value / 10 ** exp);
-  return `${coeff}`;
+  destroyOverview();
 }

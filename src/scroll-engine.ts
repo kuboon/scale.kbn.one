@@ -1,52 +1,124 @@
 import { ScaleMeta } from "./types.ts";
 
-const VIEW_MARGIN = 0.5; // visible range is ±0.5 exponents around center
+/** Headroom above maxExponent so the largest entry stays reachable when zoomed out */
+const TOP_HEADROOM = 0.5;
 
+/** The vertical axis is linear; only the span it covers is logarithmic. */
 export interface ViewportState {
-  exponent: number;
-  rangeMin: number; // linear value at lower bound
-  rangeMax: number; // linear value at upper bound
+  spanExp: number; // log₁₀ of the visible span — the zoom level
+  span: number; // 10 ** spanExp
+  bottom: number; // value at the bottom edge
+  top: number; // value at the top edge
 }
 
-function isReversed(_meta: ScaleMeta): boolean {
-  return true;
+/** Highest value any viewport may reach */
+export function topValue(meta: ScaleMeta): number {
+  return 10 ** (meta.maxExponent + TOP_HEADROOM);
 }
 
-/** Get the visible linear range for a given center exponent */
-export function getViewport(exponent: number): ViewportState {
-  return {
-    exponent,
-    rangeMin: 10 ** (exponent - VIEW_MARGIN),
-    rangeMax: 10 ** (exponent + VIEW_MARGIN),
-  };
+export function clampSpanExp(spanExp: number, meta: ScaleMeta): number {
+  return Math.max(meta.minExponent, Math.min(meta.maxExponent + TOP_HEADROOM, spanExp));
 }
 
-/** Map a linear value to a fraction (0=top, 1=bottom) within the viewport */
-export function valueToFraction(value: number, vp: ViewportState, meta: ScaleMeta): number {
-  const raw = (value - vp.rangeMin) / (vp.rangeMax - vp.rangeMin);
-  // History: top = large values (distant past), bottom = small (present)
-  return isReversed(meta) ? 1 - raw : raw;
+/** Keep the window inside [0, topValue]. The bottom edge doubles as the zoom anchor. */
+export function clampBottom(bottom: number, span: number, meta: ScaleMeta): number {
+  return Math.max(0, Math.min(topValue(meta) - span, bottom));
 }
 
-export function hueForExponent(exponent: number, meta: ScaleMeta): number {
+export function getViewport(spanExp: number, bottom: number): ViewportState {
+  const span = 10 ** spanExp;
+  return { spanExp, span, bottom, top: bottom + span };
+}
+
+/** Map a value to a fraction (0=top, 1=bottom) — large values sit at the top */
+export function valueToFraction(value: number, vp: ViewportState): number {
+  return 1 - (value - vp.bottom) / vp.span;
+}
+
+/** Map a fraction (0=left/top, 1=right/bottom) back to a value */
+export function fractionToValue(fraction: number, vp: ViewportState): number {
+  return vp.bottom + fraction * vp.span;
+}
+
+export function hueForExponent(spanExp: number, meta: ScaleMeta): number {
   const range = meta.maxExponent - meta.minExponent;
-  const progress = (exponent - meta.minExponent) / range;
+  const raw = (spanExp - meta.minExponent) / range;
+  const progress = Math.max(0, Math.min(1, raw));
   return 270 - progress * 240;
 }
 
-/** Generate tick values at 2, 4, 6, 8 × 10^n within the visible range */
-export function computeTicks(rangeMin: number, rangeMax: number): number[] {
-  const expMin = Math.floor(Math.log10(Math.max(rangeMin, 1e-35)));
-  const expMax = Math.ceil(Math.log10(Math.max(rangeMax, 1e-35)));
-  const multipliers = [2, 4, 6, 8];
+/**
+ * The overview bar is logarithmic, one band per decade. The visible window is
+ * drawn on it as a brightness field, not a hard-edged rectangle: each decade
+ * lights up by the share of screen pixels it currently occupies.
+ *
+ * Hard edges were the problem with both earlier bars. A log-mapped lower edge
+ * jumps wildly the moment `bottom` leaves zero (log 0 = -∞); a linear bar can't
+ * show position at depth at all. Occupancy varies continuously with the
+ * viewport, so no gesture can make the marker lurch — and on a log bar, one
+ * decade of zoom moves the bright band a fixed distance.
+ */
+
+/** Integer decade grid [d, d+1) covering the whole scale, low to high */
+export function overviewDecades(meta: ScaleMeta): number[] {
+  const min = Math.floor(meta.minExponent);
+  const max = Math.ceil(meta.maxExponent + TOP_HEADROOM);
+  const decades: number[] = [];
+  for (let d = min; d < max; d++) decades.push(d);
+  return decades;
+}
+
+/** Share of the screen (0..1) the decade [10^d, 10^(d+1)] occupies right now */
+export function decadeOccupancy(vp: ViewportState, d: number): number {
+  const lo = Math.max(vp.bottom, 10 ** d);
+  const hi = Math.min(vp.top, 10 ** (d + 1));
+  return Math.max(0, hi - lo) / vp.span;
+}
+
+/** Position of an exponent on the overview bar (0=top=large values, 1=bottom) */
+export function exponentToOverviewFraction(exp: number, meta: ScaleMeta): number {
+  const min = meta.minExponent;
+  const max = meta.maxExponent + TOP_HEADROOM;
+  return 1 - Math.max(0, Math.min(1, (exp - min) / (max - min)));
+}
+
+/** Pick a round step (1, 2 or 5 × 10ⁿ) that yields roughly `count` graduations */
+export function niceStep(span: number, count: number): number {
+  if (!(span > 0) || count < 1) return 0;
+  const raw = span / count;
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const normalized = raw / magnitude;
+  const multiplier = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+  return multiplier * magnitude;
+}
+
+/** Linear graduations inside the viewport, snapped to a round step */
+export function computeTicks(vp: ViewportState, count: number): number[] {
+  const step = niceStep(vp.span, count);
+  if (!(step > 0)) return [];
+
+  const first = Math.ceil(vp.bottom / step);
+  const last = Math.floor(vp.top / step);
+  if (!Number.isFinite(first) || !Number.isFinite(last) || last - first > 1000) return [];
+
   const ticks: number[] = [];
-  for (let e = expMin - 1; e <= expMax; e++) {
-    for (const m of multipliers) {
-      const v = m * 10 ** e;
-      if (v >= rangeMin && v <= rangeMax) {
-        ticks.push(v);
-      }
-    }
+  for (let i = first; i <= last; i++) {
+    // Multiplying accumulates float noise (0.2 × 3 = 0.6000000000000001)
+    ticks.push(+(i * step).toPrecision(12));
   }
   return ticks;
+}
+
+/**
+ * Bottom edge that keeps the value sitting at `fraction` (0=top, 1=bottom) pinned
+ * in place while the span changes — i.e. zoom anchored under the pointer.
+ */
+export function zoomAnchoredBottom(
+  vp: ViewportState,
+  nextSpan: number,
+  fraction: number,
+): number {
+  const distanceFromBottom = 1 - fraction;
+  const anchorValue = vp.bottom + distanceFromBottom * vp.span;
+  return anchorValue - distanceFromBottom * nextSpan;
 }

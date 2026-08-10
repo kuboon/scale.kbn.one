@@ -43,9 +43,8 @@ npm run deploy    # Build + deploy to Cloudflare
     ├── main.ts             # Entry point, hash-based routing
     ├── landing.ts          # Landing page with scale selection cards
     ├── explorer.ts         # Main interactive explorer (scroll, touch, animation)
-    ├── scroll-engine.ts    # Logarithmic viewport math, tick generation
-    ├── scale-card.ts       # Card component for individual scale entries
-    ├── scale-indicator.ts  # Bottom HUD showing current 10^n position
+    ├── scroll-engine.ts    # Linear viewport math, zoom clamping, tick generation
+    ├── scale-overview.ts   # Left overview bar (whole scale + visible slice)
     ├── format.ts           # Number formatting (Japanese numerals, superscript)
     ├── types.ts            # TypeScript interfaces (ScaleMeta, ScaleEntry, ScaleData)
     ├── style.css           # All styles (CSS variables, responsive, animations)
@@ -58,9 +57,22 @@ npm run deploy    # Build + deploy to Cloudflare
 
 **Functional style:** No classes. Each module exports functions (e.g., `renderExplorer`, `destroyExplorer`). State is managed via closures.
 
-**Logarithmic viewport:** Core math in `scroll-engine.ts` — converts linear scroll input to logarithmic exponent positions. Tick marks are fixed at 2, 4, 6, 8 × 10^n multipliers.
+**Viewport model:** Core math in `scroll-engine.ts`, split across two independent axes:
 
-**Animation loop:** `requestAnimationFrame` with exponential easing: `current += (target - current) * 0.12`.
+- **Vertical = linear pan.** The viewport is the plain interval `[bottom, bottom + span]`, and `valueToFraction` maps it linearly (0 = top = large values). Vertical scroll/swipe moves `bottom`.
+- **Horizontal = logarithmic zoom.** `spanExp` is the log₁₀ of the visible span; a rightward swipe decreases it (zoom in). Zoom is anchored under the pointer (`zoomAnchoredBottom`), so whatever sits beneath the finger stays put while everything else spreads around it.
+
+Both axes apply on every input event — there is no axis lock, so a diagonal swipe zooms and pans at once. Graduations come from `niceStep` (round 1/2/5 × 10ⁿ steps), shared by the vertical gridlines and the bottom ruler.
+
+**Two vertical lines on the left:**
+
+- **Line 1 — `scale-overview.ts`.** A fixed bar covering the whole scale end to end, captioned with both extremes (`約138億年前` … `現在`). The slice line 2 is currently showing is highlighted on it, so you can always see which part of the whole you are in.
+- **Line 2 — `.explorer-line`.** The detail axis itself, carrying the cards and the (unlabelled) gridlines.
+
+The overview bar is **logarithmic** (one band per decade), and the visible window is drawn on it as a **brightness field, not a hard-edged rectangle**: each decade lights up by the share of screen pixels it currently occupies (`decadeOccupancy`, shaped by `BRIGHTNESS_GAIN`/`GAMMA` in `scale-overview.ts`). Hard edges were the flaw in both earlier designs — a log-mapped lower edge lurches the moment `bottom` leaves zero (log 0 = −∞), and a linear bar can't show position at depth at all. Occupancy varies continuously with the viewport, so no gesture can make the marker jump; one decade of zoom slides the bright band a fixed distance down the bar, and the faint tail below it is the honest rendering of "technically on screen but crushed". At deep zoom the marker responds to zoom rather than sub-decade pans — on a log bar your order of magnitude *is* your position.
+
+
+**Animation loop:** `requestAnimationFrame` with exponential easing: `current += (target - current) * 0.12`, applied to `spanExp` and `bottom` independently. The loop only writes `transform`/`opacity`/`display` (plus the overview bar's gradient string, repainting only that 4px element) — element creation and text layout stay out of it. Crowded cards are left to overlap on purpose: zooming in is what pulls them apart, so nothing is culled except what falls off-screen.
 
 **Hue theming:** Background hue cycles (270°→30°) across the scale via `--bg-hue` CSS variable.
 

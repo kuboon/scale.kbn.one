@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
-import { superscript, toJapaneseLabel, humanReadable } from "./format";
+import { superscript, toJapaneseLabel, humanReadable, formatTickValue } from "./format";
 
 describe("superscript", () => {
   it("converts digits to superscript", () => {
@@ -29,6 +29,12 @@ describe("toJapaneseLabel", () => {
     expect(label).toMatch(/^約1\.6×10.+ m$/);
   });
 
+  it("falls back to exponential past 垓, where counters stop making sense", () => {
+    expect(toJapaneseLabel(8.8, 27, "m")).toBe(`約8.8×10${superscript("27")} m`);
+    // still counted below the threshold
+    expect(toJapaneseLabel(1, 20, "m")).toBe("約1垓 m");
+  });
+
   it("adds space before Latin unit symbols", () => {
     expect(toJapaneseLabel(1, 0, "m")).toBe("約1 m");
     expect(toJapaneseLabel(1, 0, "年前")).toBe("約1年前");
@@ -36,6 +42,25 @@ describe("toJapaneseLabel", () => {
 
   it("shows AD entries as year labels", () => {
     expect(toJapaneseLabel(0, -99, "m", 1868)).toBe("1868 年");
+  });
+});
+
+describe("formatTickValue", () => {
+  it("keeps ruler graduations plain in the human range", () => {
+    expect(formatTickValue(0)).toBe("0");
+    expect(formatTickValue(200)).toBe("200");
+    expect(formatTickValue(1000)).toBe("1000");
+    expect(formatTickValue(0.2)).toBe("0.2");
+  });
+
+  it("trims float noise", () => {
+    expect(formatTickValue(0.6000000000000001)).toBe("0.6");
+  });
+
+  it("switches to scientific notation outside it", () => {
+    expect(formatTickValue(2e10)).toBe(`2×10${superscript("10")}`);
+    expect(formatTickValue(1e10)).toBe(`10${superscript("10")}`);
+    expect(formatTickValue(4e-35)).toBe(`4×10${superscript("-35")}`);
   });
 });
 

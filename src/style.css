@@ -114,6 +114,10 @@ body {
   position: fixed;
   inset: 0;
   overflow: hidden;
+  /* Horizontal swipes drive the scale, so keep the browser's own
+     pan / back-navigation gestures out of the way */
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 .explorer-back {
@@ -170,9 +174,10 @@ body {
   overflow: hidden;
 }
 
+/* The second of the two vertical lines: the detail axis */
 .explorer-line {
   position: absolute;
-  left: 1.5rem;
+  left: 2.75rem;
   top: 0;
   bottom: 0;
   width: 2px;
@@ -189,7 +194,7 @@ body {
 .scale-card {
   position: absolute;
   top: 0;
-  left: 2.5rem;
+  left: 3.75rem;
   right: 1rem;
   padding: 1.25rem;
   border-radius: 0.75rem;
@@ -250,7 +255,7 @@ body {
 .tick-mark {
   position: absolute;
   top: 0;
-  left: 1.5rem;
+  left: 2.75rem;
   width: 20px;
   height: 1px;
   background: rgba(255, 255, 255, 0.15);
@@ -259,74 +264,61 @@ body {
   will-change: transform;
 }
 
-.tick-label {
-  position: absolute;
-  left: calc(100% + 0.4rem);
-  top: -0.6em;
-  font-size: 0.6rem;
-  font-family: "Courier New", monospace;
-  color: rgba(255, 255, 255, 0.25);
-  white-space: nowrap;
-}
+/* ============ Overview Bar & Readout ============ */
 
-/* ============ Indicator HUD ============ */
-
-.scale-indicator {
-  position: fixed;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  padding: 0.6rem 1.5rem;
-  border-radius: 1rem;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--card-border);
-  white-space: nowrap;
-}
-
-.scale-indicator-exp {
-  font-size: 1.1rem;
-  font-weight: 700;
-  font-family: "Courier New", monospace;
-  color: var(--text-accent);
-}
-
-.scale-indicator-readable {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.boundary-flash {
-  position: absolute;
-  top: -2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.9rem;
-  font-weight: 700;
-  font-family: "Courier New", monospace;
-  color: var(--text-accent);
-  opacity: 0;
+.scale-chrome {
+  /* the whole screen is the swipe surface — never swallow a gesture */
   pointer-events: none;
 }
 
-.boundary-flash--active {
-  animation: boundary-pop 0.6s ease-out forwards;
+/* The first of the two vertical lines: the whole scale, fixed */
+.overview {
+  position: fixed;
+  left: 1.1rem;
+  top: var(--top-pad);
+  bottom: var(--bottom-pad);
+  width: 4px;
+  z-index: 90;
 }
 
-@keyframes boundary-pop {
-  0% {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(-50%) scale(1.5) translateY(-1rem);
-  }
+.overview-track {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  border-radius: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgba(167, 139, 250, 0.22),
+    rgba(56, 189, 248, 0.22),
+    rgba(16, 185, 129, 0.22)
+  );
+}
+
+/* The slice the detail axis is currently showing, as a brightness gradient:
+   each decade glows by how much of the screen it occupies (background is
+   rebuilt per frame in scale-overview.ts) */
+.overview-window {
+  position: absolute;
+  inset: 0 -2px;
+  border-radius: 4px;
+  will-change: background;
+}
+
+.overview-cap {
+  position: absolute;
+  left: 0;
+  font-size: 0.55rem;
+  font-family: "Courier New", monospace;
+  color: rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+}
+
+.overview-cap--top {
+  bottom: calc(100% + 0.35rem);
+}
+
+.overview-cap--bottom {
+  top: calc(100% + 0.35rem);
 }
 
 /* ============ Responsive ============ */
@@ -350,11 +342,11 @@ body {
   }
 
   .explorer-line {
-    left: 2.5rem;
+    left: 3.75rem;
   }
 
   .scale-card {
-    left: 3.5rem;
+    left: 4.75rem;
   }
 
   .scale-card::before {
@@ -362,6 +354,10 @@ body {
   }
 
   .tick-mark {
-    left: 2.5rem;
+    left: 3.75rem;
+  }
+
+  .overview {
+    left: 2rem;
   }
 }
