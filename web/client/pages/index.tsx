@@ -16,12 +16,13 @@ export const description =
 
 export const hydrate = false;
 
-/** The old hash routes, forwarded to the pages that replaced them. */
-const redirect = `(function(){var m={"#history":${
-  JSON.stringify(routes.history.href())
-},"#length":${
-  JSON.stringify(routes.length.href())
-}}[location.hash];if(m)location.replace(m)})()`;
+/**
+ * The old hash routes, forwarded to the pages that replaced them. The script is a constant; the
+ * targets ride in `data-` attributes, so no value is ever spliced into code.
+ */
+const REDIRECT =
+  "(function(d){var m={'#history':d.history,'#length':d.length}" +
+  "[location.hash];if(m)location.replace(m)})(document.currentScript.dataset)";
 
 const SCALES = [
   {
@@ -45,7 +46,11 @@ const SCALES = [
 export default function Home(_handle: Handle) {
   return () => (
     <>
-      <script innerHTML={unsafeHTML(redirect)} />
+      <script
+        data-history={routes.history.href()}
+        data-length={routes.length.href()}
+        innerHTML={unsafeHTML(REDIRECT)}
+      />
       <h1>スケール探検</h1>
       <p mix={leadStyle}>
         対数のものさしの上を、スクロールで旅する。1 目盛りごとに 10 倍。
