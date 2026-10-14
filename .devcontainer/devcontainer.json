@@ -1,10 +1,16 @@
 {
-  "name": "Debian",
+  "name": "Debian deno",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-
   "features": {
     "ghcr.io/kuboon/devcontainer-features/mise": {
-      "global": "node lazygit"
+      "global": "deno"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "denoland.vscode-deno"
+      ]
     }
   }
 }
