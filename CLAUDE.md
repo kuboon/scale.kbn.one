@@ -1,122 +1,84 @@
 # CLAUDE.md — scale.kbn.one
 
-## Project Overview
+対数スケールの探検アプリ（「スケール探検」）。2 ページ:
 
-Interactive logarithmic scale explorer ("スケール探検") that lets users scroll/swipe through vastly different orders of magnitude. Two scales available:
+- `/history` — `data/history.yaml`。ビッグバン（1.38×10¹⁰ 年前）→ 現在
+- `/length` — `data/length.yaml`。プランク長（10⁻³⁵ m）→ 観測可能な宇宙
 
-- **History** (`#history`): Big Bang → present (1.38×10¹⁰ years → now)
-- **Length** (`#length`): Planck length (10⁻³⁵ m) → Observable Universe (8.8×10²⁷ m)
+UI は日本語。MIT。
 
-UI is primarily in Japanese with English translations. Licensed under MIT.
+## 構成
 
-## Tech Stack
+[kuboon/deno-remix-tmpl](https://github.com/kuboon/deno-remix-tmpl) の **static
+モード**から作った派生アプリ（server API なし、GitHub Pages のみ）。
 
-- **TypeScript** (strict mode, ES2022 target)
-- **Vite** via `vite-plus` — build tool
-- **Cloudflare Pages/Workers** — deployment (wrangler)
-- **No runtime dependencies** — vanilla TS, HTML, CSS only
-- **YAML** data files parsed via custom Vite plugin + `js-yaml`
+```
+data/*.yaml                 # スケールのデータ（手で編集する。fmt 対象外）
+web/client/                 # ブラウザへ渡るもの全部。deno.ns 無しで型チェック
+  routes.ts                 # / /history /length
+  layout.tsx                # 文書シェル（bare = ヘッダ無しの全画面ページ）
+  pages/index.tsx           # トップ。JS 無し（旧 /#history 等のリダイレクト 1 行だけ）
+  pages/explorer.tsx        # Axis → PageModule。2 ページはこれ 1 つ
+  islands/explorer.tsx      # 本体の island
+  lib/scale.ts              # YAML → Axis、座標、カード配置（純関数）
+  lib/format.ts             # 億・万、光年/km/m… の表記
+web/server/
+  router.tsx                # 唯一のエントリ。ssg がこれをクロールして静的化
+  data.ts                   # YAML 読み込み + 検証（@std/yaml）
+  og/                       # OGP 画像（canvaskit）
+  tests/                    # Deno.test（client/lib のテストもここ）
+web/tests/                  # lightpanda のブラウザ smoke テスト
+```
 
-## Commands
+## Explorer の設計
+
+- **縦スクロール = 対数軸**。1 桁 =
+  `decadePx`。ページそのもの（window）がスクロール
+  するので慣性・アドレスバー収縮・キーボードはブラウザ任せ。
+- **ズーム = `--decade` の CSS 変数 1 つ**。点・目盛り・カードは
+  `calc(var(--pad-top) + (hi − log) × var(--decade))` で置かれるので、SSR の
+  HTML だけで JS 無しでも読める。ズーム時は `anchoredScroll`
+  で指の下の値を固定する。
+- ジェスチャ: ピンチ / ダブルタップ＋ドラッグ（片手ズーム）/ ダブルタップ×2 /
+  Ctrl+ホイール / `+` `-` / 右端のレール（全体表示 + スクラブ）。
+- 読み取り線（画面
+  38%）に一番近い項目が下部パネルに出る。カードをタップでそこへ。
+- カードは `placeCards` で重ならないよう押し下げ、`maxShift` を超えるものは隠す
+  （点だけ残る）。ズームインで増える。
+- 位置と倍率は `#at=<log>&z=<画面あたりの桁数>` で URL に残る。
+- island は `render` を 1 回だけ走らせ、以後は ref で DOM を直接触る
+  （`handle.update()` は呼ばない）。
+- 背景色相は読み取り位置で 270°→30°（`hueAt`）。
+
+## コマンド
 
 ```sh
-npm run dev       # Local dev server (vite-plus)
-npm run build     # Production build → dist/
-npm run test      # Run tests (vp test run)
-npm run preview   # Build + local preview via wrangler
-npm run deploy    # Build + deploy to Cloudflare
+deno task dev | check | test | test:browser | build
 ```
 
-## Project Structure
+変更前後に `deno task check && deno task test && deno task build` と
+`deno task test:browser` を通す。
 
-```
-├── index.html              # Entry HTML
-├── vite.config.ts          # Vite config (ES2022, YAML plugin)
-├── vite-plugin-yaml.ts     # Custom plugin: import .yaml as ES modules
-├── wrangler.jsonc           # Cloudflare Workers config
-├── tsconfig.json           # TypeScript strict config
-├── mise.toml               # Tool version pinning (node, vite-plus)
-├── data/
-│   ├── history.yaml        # Timeline entries (45+ items)
-│   └── length.yaml         # Length scale entries (35+ items)
-└── src/
-    ├── main.ts             # Entry point, hash-based routing
-    ├── landing.ts          # Landing page with scale selection cards
-    ├── explorer.ts         # Main interactive explorer (scroll, touch, animation)
-    ├── scroll-engine.ts    # Linear viewport math, zoom clamping, tick generation
-    ├── scale-overview.ts   # Left overview bar (whole scale + visible slice)
-    ├── format.ts           # Number formatting (Japanese numerals, superscript)
-    ├── types.ts            # TypeScript interfaces (ScaleMeta, ScaleEntry, ScaleData)
-    ├── style.css           # All styles (CSS variables, responsive, animations)
-    └── vite-env.d.ts       # Vite type declarations
-```
-
-## Architecture & Key Patterns
-
-**Routing:** Hash-based (`#`, `#history`, `#length`) handled in `main.ts`.
-
-**Functional style:** No classes. Each module exports functions (e.g., `renderExplorer`, `destroyExplorer`). State is managed via closures.
-
-**Viewport model:** Core math in `scroll-engine.ts`, split across two independent axes:
-
-- **Vertical = linear pan.** The viewport is the plain interval `[bottom, bottom + span]`, and `valueToFraction` maps it linearly (0 = top = large values). Vertical scroll/swipe moves `bottom`.
-- **Horizontal = logarithmic zoom.** `spanExp` is the log₁₀ of the visible span; a rightward swipe decreases it (zoom in). Zoom is anchored under the pointer (`zoomAnchoredBottom`), so whatever sits beneath the finger stays put while everything else spreads around it.
-
-Both axes apply on every input event — there is no axis lock, so a diagonal swipe zooms and pans at once. Graduations come from `niceStep` (round 1/2/5 × 10ⁿ steps), shared by the vertical gridlines and the bottom ruler.
-
-**Two vertical lines on the left:**
-
-- **Line 1 — `scale-overview.ts`.** A fixed bar covering the whole scale end to end, captioned with both extremes (`約138億年前` … `現在`). The slice line 2 is currently showing is highlighted on it, so you can always see which part of the whole you are in.
-- **Line 2 — `.explorer-line`.** The detail axis itself, carrying the cards and the (unlabelled) gridlines.
-
-The overview bar is **logarithmic** (one band per decade), and the visible window is drawn on it as a **brightness field, not a hard-edged rectangle**: each decade lights up by the share of screen pixels it currently occupies (`decadeOccupancy`, shaped by `BRIGHTNESS_GAIN`/`GAMMA` in `scale-overview.ts`). Hard edges were the flaw in both earlier designs — a log-mapped lower edge lurches the moment `bottom` leaves zero (log 0 = −∞), and a linear bar can't show position at depth at all. Occupancy varies continuously with the viewport, so no gesture can make the marker jump; one decade of zoom slides the bright band a fixed distance down the bar, and the faint tail below it is the honest rendering of "technically on screen but crushed". At deep zoom the marker responds to zoom rather than sub-decade pans — on a log bar your order of magnitude *is* your position.
-
-
-**Animation loop:** `requestAnimationFrame` with exponential easing: `current += (target - current) * 0.12`, applied to `spanExp` and `bottom` independently. The loop only writes `transform`/`opacity`/`display` (plus the overview bar's gradient string, repainting only that 4px element) — element creation and text layout stay out of it. Crowded cards are left to overlap on purpose: zooming in is what pulls them apart, so nothing is culled except what falls off-screen.
-
-**Hue theming:** Background hue cycles (270°→30°) across the scale via `--bg-hue` CSS variable.
-
-**Data flow:** YAML → imported as ES modules at build time → passed to explorer as `ScaleData`.
-
-## Code Conventions
-
-- **Variables/functions:** camelCase (`currentExp`, `hueForExponent`)
-- **Constants:** UPPER_SNAKE_CASE (`MAX_TICKS`, `CARD_HEIGHT`)
-- **CSS classes:** kebab-case (`.scale-card`, `.explorer-viewport`)
-- **One module per file**, clear separation of concerns
-- **Passive event listeners** used appropriately (passive: false only where preventDefault needed)
-- **Cleanup functions** (e.g., `destroyExplorer()`) prevent memory leaks on route changes
-- **Commit messages** mix Japanese and English; use conventional-ish prefixes (`fix:`, `feat:`)
-
-## Data Files
-
-Scale entries in `data/*.yaml` follow this structure:
+## データ
 
 ```yaml
-meta:
-  id: history
-  title: 宇宙の歴史
-  unit: 年前
-  unitSymbol: 年前
-  minExponent: -1
-  maxExponent: 11
+meta: { id, title, subtitle, unit, unitSymbol, minExponent, maxExponent }
 entries:
-  - exponent: 10 # log₁₀ value
-    value: 1.38 # actual value is (value × 10^exp)
-    name: ビッグバン # Japanese name
-    nameEn: Big Bang # English name
-    description: ... # Japanese description
+  - exponent: 9 # value × 10^exponent
+    value: 4.5
+    name: …
+    nameEn: …
+    description: …
+  - ad: 1868 # 西暦。ビルド年からの「年前」に変換
+    name: …
 ```
 
-## CI/CD
+`value: 0` は「現在」で軸の下端に固定（log 0 は −∞ のため）。
 
-- **GitHub Actions** (`.github/workflows/test-deploy.yaml`): build on push to `main`, deploy to GitHub Pages
-- **Cloudflare** deployment also available via `npm run deploy`
-- **Dependabot** configured with 7-day cooldown
+## 規約
 
-## Important Notes
-
-- Tests use `vite-plus/test` (Vitest-compatible API): `npm test`
-- Build output goes to `dist/` (gitignored)
-- `.npmrc` sets `ignore-scripts=true` and `min-release-age=7d` for security
-- The app uses no external runtime JS — everything is bundled vanilla TypeScript
+- Deno ファースト、TypeScript strict、`Deno.test()` + `@std/assert`
+- 見た目は `css()` mixin と `web/client/tokens.ts`（Tailwind 等は使わない）
+- `web/client/` で `Deno.` を参照しない
+- コミットメッセージは日英混在、`feat:` `fix:` 等
+- デプロイ: `.github/workflows/pages.yml`（main はルート、PR はプレビュー）

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img"
+  aria-label="スケール探検">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b1d6e" />
+      <stop offset="1" stop-color="#7a4a12" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)" />
+  <g stroke="#fff" stroke-linecap="round">
+    <path d="M22 10v44" stroke-width="3" />
+    <path d="M12 12h10M12 32h10M12 52h10" stroke-width="3" />
+    <path d="M17 18h5M17 22.5h5M17 25.5h5M17 38h5M17 42.5h5M17 45.5h5"
+      stroke-width="1.6" />
+  </g>
+  <circle cx="22" cy="28" r="4" fill="#ffc46b" />
+  <path d="M30 28h22" stroke="#ffc46b" stroke-width="3"
+    stroke-linecap="round" />
+</svg>
