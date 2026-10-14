@@ -17,6 +17,12 @@ jobs:
   pages:
     uses: kuboon/workflows/.github/workflows/github-page-with-preview.yaml@main
     with:
-      # `mise run build` (the default) installs Deno and runs `deno task build`
-      # (see mise.toml), with BASE_URL set by the workflow.
+      # The same command builds `main` (the root) and the PR (the preview). Until this Deno
+      # rewrite is on `main`, main is still the npm/Vite app, so build that one the old way.
+      # Delete the `else` branch (and this comment) once `main` has a deno.json.
+      build-command: >-
+        if [ -f deno.json ]; then mise run build;
+        else npm i && npm run build && mkdir -p web && mv dist web/dist; fi
+      # `mise run build` installs Deno and runs `deno task build` (see mise.toml),
+      # with BASE_URL set by the workflow.
       dist-dir: web/dist
