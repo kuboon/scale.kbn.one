@@ -256,3 +256,29 @@ export function hueAt(fraction: number): number {
   const f = Math.min(Math.max(fraction, 0), 1);
   return 270 - f * 240;
 }
+
+// --- the dial ------------------------------------------------------------------------------
+
+/** One full turn of the dial multiplies the zoom by this. */
+export const DIAL_TURN_FACTOR = 10;
+
+/**
+ * The signed angle from `from` to `to`, in (−π, π] — the short way round, so a pointer crossing
+ * the ±π seam behind the dial's centre is not read as a full turn back.
+ */
+export function angleDelta(from: number, to: number): number {
+  let d = (to - from) % (2 * Math.PI);
+  if (d > Math.PI) d -= 2 * Math.PI;
+  if (d <= -Math.PI) d += 2 * Math.PI;
+  return d;
+}
+
+/** The zoom factor for turning the dial by `radians` (clockwise positive = zoom in). */
+export function dialFactor(radians: number): number {
+  return DIAL_TURN_FACTOR ** (radians / (2 * Math.PI));
+}
+
+/** The dial's resting angle for a zoom, in degrees: it turns exactly with the finger. */
+export function dialAngle(decadePx: number): number {
+  return (Math.log(decadePx) / Math.log(DIAL_TURN_FACTOR)) * 360;
+}

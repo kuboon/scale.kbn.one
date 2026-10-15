@@ -2,8 +2,11 @@ import { assert, assertAlmostEquals, assertEquals } from "@std/assert";
 
 import {
   anchoredScroll,
+  angleDelta,
   captionStep,
   clampDecadePx,
+  dialAngle,
+  dialFactor,
   logToY,
   placeCards,
   readout,
@@ -87,4 +90,16 @@ Deno.test("placeCards always shows the pinned card", () => {
 Deno.test("readout", () => {
   assertEquals(readout("history", 9), "約10億年前");
   assertEquals(readout("length", 0), "約1 m");
+});
+
+Deno.test("angleDelta goes the short way round the seam", () => {
+  assertAlmostEquals(angleDelta(0.1, 0.3), 0.2);
+  assertAlmostEquals(angleDelta(3.1, -3.1), 2 * Math.PI - 6.2);
+  assertAlmostEquals(angleDelta(-3.1, 3.1), -(2 * Math.PI - 6.2));
+});
+
+Deno.test("one clockwise turn of the dial zooms in ×10, and the dial follows", () => {
+  assertAlmostEquals(dialFactor(2 * Math.PI), 10);
+  assertAlmostEquals(dialFactor(-Math.PI), 1 / Math.sqrt(10));
+  assertAlmostEquals(dialAngle(1000) - dialAngle(100), 360);
 });

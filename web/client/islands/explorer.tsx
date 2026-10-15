@@ -9,6 +9,8 @@
  * - **Pinch** (two fingers) changes how tall a decade is, anchored between the fingers.
  * - **Double-tap and drag** (one thumb, the maps gesture): tap, then touch again and drag down to
  *   zoom in, up to zoom out. A plain double tap zooms in ×2.
+ * - **The dial** in the bottom-right corner: turn it with a thumb, clockwise to zoom in. One full
+ *   turn is ×10, and it turns exactly with the finger — the one-handed zoom with the finest control.
  * - **Ctrl + wheel / trackpad pinch** on a desktop, and the `−` `+` buttons and keys anywhere.
  * - **The rail** on the right edge is the whole scale end to end. Drag along it to jump — the
  *   index scrubber an address book has — and it shows where the screen is within the whole.
@@ -27,10 +29,13 @@ import { clientEntry, css, type Handle, on, ref } from "@remix-run/component";
 
 import {
   anchoredScroll,
+  angleDelta,
   type Axis,
   captionStep,
   clampDecadePx,
   decadeCaption,
+  dialAngle,
+  dialFactor,
   hueAt,
   logToY,
   placeCards,
@@ -74,6 +79,9 @@ export const Explorer = clientEntry(
     let thumb: HTMLElement | null = null;
     let railMark: HTMLElement | null = null;
     let ruler: HTMLElement | null = null;
+    let dial: HTMLElement | null = null;
+    let dialFace: HTMLElement | null = null;
+    let dialLabel: HTMLElement | null = null;
     const detail: Record<string, HTMLElement | null> = {};
     const cards: (HTMLElement | null)[] = [];
     const leaders: (SVGPathElement | null)[] = [];
@@ -84,11 +92,12 @@ export const Explorer = clientEntry(
     let focusPoint: (index: number) => void = () => {};
 
     handle.queueTask(() => {
-      if (!root || !content || !reticle || !rail) return;
+      if (!root || !content || !reticle || !rail || !dial) return;
       const rootEl = root;
       const contentEl = content;
       const reticleEl = reticle;
       const railEl = rail;
+      const dialEl = dial;
       const options = { signal: handle.signal } as const;
       const win = globalThis as typeof globalThis & Window;
 
@@ -118,6 +127,10 @@ export const Explorer = clientEntry(
       /** Lays the cards out for the current zoom. Cheap enough for every frame of a pinch. */
       function layout(): void {
         contentEl.style.setProperty("--decade", `${decadePx}px`);
+        if (dialFace) dialFace.style.rotate = `${dialAngle(decadePx)}deg`;
+        if (dialLabel) {
+          dialLabel.textContent = `${(viewH / decadePx).toPrecision(2)}桁`;
+        }
         ruler?.toggleAttribute("data-fine", decadePx >= 90);
 
         const step = captionStep(decadePx);
@@ -433,6 +446,52 @@ export const Explorer = clientEntry(
       railEl.addEventListener("pointerup", release, options);
       railEl.addEventListener("pointercancel", release, options);
 
+      // The dial: the angle the pointer sweeps around its centre is the zoom. Only the change in
+      // angle counts, so it does not matter where on the dial the thumb lands.
+      let dialTurn: { angle: number } | null = null;
+      const angleOf = (event: PointerEvent) => {
+        const rect = dialEl.getBoundingClientRect();
+        return Math.atan2(
+          event.clientY - (rect.top + rect.height / 2),
+          event.clientX - (rect.left + rect.width / 2),
+        );
+      };
+      dialEl.addEventListener("pointerdown", (event) => {
+        cancelAnimationFrame(zoomFrame);
+        dialEl.setPointerCapture(event.pointerId);
+        dialEl.setAttribute("data-active", "");
+        dialTurn = { angle: angleOf(event) };
+        event.preventDefault();
+      }, options);
+      dialEl.addEventListener("pointermove", (event) => {
+        if (!dialTurn || !dialEl.hasPointerCapture(event.pointerId)) return;
+        const angle = angleOf(event);
+        const before = Math.floor(Math.log2(decadePx));
+        zoomTo(
+          decadePx * dialFactor(angleDelta(dialTurn.angle, angle)),
+          logAt(reticleY),
+          reticleY,
+        );
+        dialTurn.angle = angle;
+        // A tick under the thumb at every doubling, where the device can.
+        if (Math.floor(Math.log2(decadePx)) !== before) navigator.vibrate?.(4);
+      }, options);
+      const releaseDial = () => {
+        dialTurn = null;
+        dialEl.removeAttribute("data-active");
+      };
+      dialEl.addEventListener("pointerup", releaseDial, options);
+      dialEl.addEventListener("pointercancel", releaseDial, options);
+      dialEl.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        cancelAnimationFrame(zoomFrame);
+        zoomTo(
+          decadePx * Math.exp(-event.deltaY * 0.004),
+          logAt(reticleY),
+          reticleY,
+        );
+      }, { ...options, passive: false });
+
       // --- start -------------------------------------------------------------------------------
 
       measure();
@@ -598,6 +657,35 @@ export const Explorer = clientEntry(
           />
         </div>
 
+        <div
+          mix={[ref((node) => (dial = node as HTMLElement)), dialStyle]}
+          role="slider"
+          aria-label="ズーム。回すと拡大縮小（時計回りで拡大）"
+        >
+          <div
+            mix={[
+              ref((node) => (dialFace = node as HTMLElement)),
+              dialFaceStyle,
+            ]}
+          >
+            {Array.from({ length: 24 }, (_, i) => (
+              <i
+                key={`t${i}`}
+                style={{ rotate: `${i * 15}deg` }}
+                data-major={i % 6 === 0 ? "" : undefined}
+              />
+            ))}
+          </div>
+          <span
+            mix={[
+              ref((node) => (dialLabel = node as HTMLElement)),
+              dialLabelStyle,
+            ]}
+          >
+            {`${DEFAULT_SPAN}桁`}
+          </span>
+        </div>
+
         <section
           mix={[
             ref((node) => (detail.root = node as HTMLElement)),
@@ -606,7 +694,7 @@ export const Explorer = clientEntry(
           data-empty=""
         >
           <p>
-            上下にスワイプで移動・ピンチかダブルタップ＋ドラッグで拡大縮小・右端のバーで一気に移動
+            上下にスワイプで移動・右下のダイヤルを回して拡大縮小（ピンチも可）・右端のバーで一気に移動
           </p>
           <small mix={ref((node) => (detail.label = node as HTMLElement))} />
           <h2 mix={ref((node) => (detail.name = node as HTMLElement))} />
@@ -644,6 +732,9 @@ const tile = (fine: boolean) => {
     `${minors}</svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 };
+
+/** The dial's diameter, px — a comfortable thumb circle. */
+const DIAL_SIZE = 92;
 
 const rootStyle = css({
   position: "relative",
@@ -856,7 +947,8 @@ const railStyle = css({
   right: 0,
   width: "40px",
   top: `calc(${safeTop} + 3.6rem)`,
-  bottom: `calc(${safeBottom} + 8.5rem)`,
+  // Clear of the dial below it.
+  bottom: `calc(${safeBottom} + 8.5rem + ${DIAL_SIZE + 12}px)`,
   borderLeft: "1px solid rgb(255 255 255 / 0.12)",
   background: "rgb(0 0 0 / 0.18)",
   touchAction: "none",
@@ -912,4 +1004,47 @@ const detailStyle = css({
   "& > p:first-child": { margin: 0, color: faint, fontSize: "0.85rem" },
   "&[data-empty] > :not(:first-child)": { display: "none" },
   "&:not([data-empty]) > :first-child": { display: "none" },
+});
+
+const dialStyle = css({
+  position: "fixed",
+  right: "8px",
+  bottom: `calc(${safeBottom} + 8.2rem)`,
+  width: `${DIAL_SIZE}px`,
+  height: `${DIAL_SIZE}px`,
+  borderRadius: "50%",
+  border: "1px solid rgb(255 255 255 / 0.3)",
+  background: `radial-gradient(circle, ${glass} 45%, rgb(255 255 255 / 0.08))`,
+  boxShadow: "0 4px 16px rgb(0 0 0 / 0.4)",
+  touchAction: "none",
+  cursor: "grab",
+  "&[data-active]": { cursor: "grabbing", borderColor: accent },
+});
+
+const dialFaceStyle = css({
+  position: "absolute",
+  inset: 0,
+  "& i": {
+    position: "absolute",
+    left: "50%",
+    top: "4px",
+    width: "2px",
+    height: "8px",
+    marginLeft: "-1px",
+    borderRadius: "1px",
+    background: faint,
+    transformOrigin: `1px ${DIAL_SIZE / 2 - 4}px`,
+  },
+  "& i[data-major]": { height: "13px", background: accent },
+});
+
+const dialLabelStyle = css({
+  position: "absolute",
+  inset: 0,
+  display: "grid",
+  placeItems: "center",
+  fontSize: "0.72rem",
+  fontWeight: 700,
+  color: ink,
+  pointerEvents: "none",
 });
