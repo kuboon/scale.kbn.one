@@ -224,16 +224,10 @@ entries:
     nameEn: Industrial Revolution
     description: 蒸気機関が社会を根本から変革（1770年代）
 
-  - exponent: 2
-    value: 1.58
-    name: 明治維新
-    nameEn: Meiji Restoration
-    description: 日本の近代化の始まり、封建制度から近代国家へ（1868年）
-
   - ad: 1868
-    name: 明治元年
-    nameEn: Meiji Era Begins
-    description: 明治天皇の即位により明治時代が始まる
+    name: 明治維新・明治元年
+    nameEn: Meiji Restoration / Meiji Era Begins
+    description: 明治天皇の即位により明治時代が始まり、日本は封建制度から近代国家へ歩み出す
 
   - exponent: 2
     value: 1.4
