@@ -9,15 +9,17 @@
  * - **Pinch** (two fingers) changes how tall a decade is, anchored between the fingers.
  * - **Double-tap and drag** (one thumb, the maps gesture): tap, then touch again and drag down to
  *   zoom in, up to zoom out. A plain double tap zooms in ×2.
- * - **The dial** in the bottom-right corner: turn it with a thumb, clockwise to zoom in. One full
- *   turn is ×10, and it turns exactly with the finger — the one-handed zoom with the finest control.
+ * - **Swipe sideways, anywhere**: the value under the finger stays under it while everything else
+ *   spreads away (right) or gathers in (left). A swipe across the full screen width is ×10, and a
+ *   flick carries on for a moment. Which way a touch goes is settled in its first few pixels
+ *   (`swipeAxis`): mostly sideways zooms, anything else is the browser's own vertical scroll.
  * - **Ctrl + wheel / trackpad pinch** on a desktop, and the `−` `+` buttons and keys anywhere.
  * - **The rail** on the right edge is the whole scale end to end. Drag along it to jump — the
  *   index scrubber an address book has — and it shows where the screen is within the whole.
  *
  * The reticle, a line 60% down the screen, is the reading head: its value is printed beside it, and
  * the entry nearest to it fills the panel at the top. Tapping a card brings it to the reticle.
- * Reading goes at the top and the controls (the dial) at the bottom, where the thumb is.
+ * Reading goes at the top; the bottom of the screen is left to the thumb.
  *
  * Positions are CSS: every dot, caption and card sits at `calc(var(--pad-top) + (hi − log) ×
  * var(--decade))`, so the server-rendered page is already a working scrollable scale with no
@@ -30,17 +32,16 @@ import { clientEntry, css, type Handle, on, ref } from "@remix-run/component";
 
 import {
   anchoredScroll,
-  angleDelta,
   type Axis,
   captionStep,
   clampDecadePx,
   decadeCaption,
-  dialAngle,
-  dialFactor,
   hueAt,
   logToY,
   placeCards,
   readout,
+  swipeAxis,
+  swipeFactor,
   yToLog,
 } from "../lib/scale.ts";
 import { powerOfTen, superscript } from "../lib/format.ts";
@@ -80,9 +81,6 @@ export const Explorer = clientEntry(
     let thumb: HTMLElement | null = null;
     let railMark: HTMLElement | null = null;
     let ruler: HTMLElement | null = null;
-    let dial: HTMLElement | null = null;
-    let dialFace: HTMLElement | null = null;
-    let dialLabel: HTMLElement | null = null;
     const detail: Record<string, HTMLElement | null> = {};
     const cards: (HTMLElement | null)[] = [];
     const leaders: (SVGPathElement | null)[] = [];
@@ -93,12 +91,11 @@ export const Explorer = clientEntry(
     let focusPoint: (index: number) => void = () => {};
 
     handle.queueTask(() => {
-      if (!root || !content || !reticle || !rail || !dial) return;
+      if (!root || !content || !reticle || !rail) return;
       const rootEl = root;
       const contentEl = content;
       const reticleEl = reticle;
       const railEl = rail;
-      const dialEl = dial;
       const options = { signal: handle.signal } as const;
       const win = globalThis as typeof globalThis & Window;
 
@@ -128,10 +125,6 @@ export const Explorer = clientEntry(
       /** Lays the cards out for the current zoom. Cheap enough for every frame of a pinch. */
       function layout(): void {
         contentEl.style.setProperty("--decade", `${decadePx}px`);
-        if (dialFace) dialFace.style.rotate = `${dialAngle(decadePx)}deg`;
-        if (dialLabel) {
-          dialLabel.textContent = `${(viewH / decadePx).toPrecision(2)}桁`;
-        }
         ruler?.toggleAttribute("data-fine", decadePx >= 90);
 
         const step = captionStep(decadePx);
@@ -186,6 +179,20 @@ export const Explorer = clientEntry(
 
       function zoomBy(factor: number, screenY = reticleY): void {
         animateZoom(decadePx * factor, screenY);
+      }
+
+      /** Lets a flicked swipe run on, slowing down; `v` is px/ms sideways. */
+      function coast(v: number, log: number, screenY: number): void {
+        cancelAnimationFrame(zoomFrame);
+        let last = performance.now();
+        const step = (now: number) => {
+          const dt = now - last;
+          last = now;
+          zoomTo(decadePx * swipeFactor(v * dt, viewW), log, screenY);
+          v *= 0.92 ** (dt / 16);
+          if (Math.abs(v) > 0.02) zoomFrame = requestAnimationFrame(step);
+        };
+        zoomFrame = requestAnimationFrame(step);
       }
 
       focusPoint = (index) => {
@@ -307,6 +314,17 @@ export const Explorer = clientEntry(
           log: number;
           moved: boolean;
         }
+        // A one-finger touch whose direction is not known yet; it becomes a swipe or is let go.
+        | { kind: "pending"; x: number; y: number }
+        | {
+          kind: "swipe";
+          x: number;
+          px: number;
+          log: number;
+          lastX: number;
+          lastT: number;
+          v: number;
+        }
         | null;
       let gesture: Gesture = null;
       let lastTap = { time: 0, x: 0, y: 0 };
@@ -346,13 +364,51 @@ export const Explorer = clientEntry(
             moved: false,
           };
           event.preventDefault();
+          return;
         }
+        cancelAnimationFrame(zoomFrame);
+        gesture = { kind: "pending", x, y: cy };
       }, { ...options, passive: false });
 
       contentEl.addEventListener("touchmove", (event) => {
         if (!gesture) return;
-        if (event.cancelable) event.preventDefault();
         const t = event.touches;
+        if (gesture.kind === "pending" && t.length === 1) {
+          const dx = t[0].clientX - gesture.x;
+          const axis = swipeAxis(dx, t[0].clientY - gesture.y);
+          if (axis === null) return;
+          if (axis === "scroll") {
+            gesture = null;
+            return;
+          }
+          // Measured from here, so the slop the finger used up does not jump the zoom.
+          gesture = {
+            kind: "swipe",
+            x: t[0].clientX,
+            px: decadePx,
+            log: logAt(t[0].clientY),
+            lastX: t[0].clientX,
+            lastT: performance.now(),
+            v: 0,
+          };
+        }
+        if (gesture.kind === "pending") return;
+        if (event.cancelable) event.preventDefault();
+        if (gesture.kind === "swipe" && t.length === 1) {
+          // The value that was under the finger stays under it, wherever the finger goes.
+          const { clientX: x, clientY: y } = t[0];
+          zoomTo(
+            gesture.px * swipeFactor(x - gesture.x, viewW),
+            gesture.log,
+            y,
+          );
+          const now = performance.now();
+          const dt = Math.max(now - gesture.lastT, 1);
+          gesture.v = 0.8 * ((x - gesture.lastX) / dt) + 0.2 * gesture.v;
+          gesture.lastX = x;
+          gesture.lastT = now;
+          return;
+        }
         if (gesture.kind === "pinch" && t.length >= 2) {
           // The value under the fingers follows the fingers, so a pinch can pan as well.
           zoomTo(
@@ -369,6 +425,17 @@ export const Explorer = clientEntry(
 
       const endTouch = (event: TouchEvent) => {
         const now = performance.now();
+        if (gesture?.kind === "swipe") {
+          const touch = event.changedTouches[0];
+          const fresh = now - gesture.lastT < 80;
+          if (touch && fresh && Math.abs(gesture.v) > 0.2) {
+            coast(gesture.v, gesture.log, touch.clientY);
+          }
+          gesture = null;
+          lastTap = { time: 0, x: 0, y: 0 };
+          return;
+        }
+        if (gesture?.kind === "pending") gesture = null;
         if (gesture?.kind === "drag" && event.touches.length === 0) {
           // A second tap that never moved is a double tap.
           if (!gesture.moved) zoomBy(2, gesture.startY);
@@ -404,6 +471,17 @@ export const Explorer = clientEntry(
 
       // A trackpad pinch arrives as a wheel event with `ctrlKey` set, and so does Ctrl + wheel.
       win.addEventListener("wheel", (event) => {
+        // A sideways two-finger swipe on a trackpad zooms, as a sideways swipe does on a phone.
+        if (!event.ctrlKey && Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+          event.preventDefault();
+          cancelAnimationFrame(zoomFrame);
+          zoomTo(
+            decadePx * swipeFactor(-event.deltaX, viewW),
+            logAt(event.clientY),
+            event.clientY,
+          );
+          return;
+        }
         if (!event.ctrlKey) return;
         event.preventDefault();
         cancelAnimationFrame(zoomFrame);
@@ -440,52 +518,6 @@ export const Explorer = clientEntry(
       const release = () => railEl.removeAttribute("data-active");
       railEl.addEventListener("pointerup", release, options);
       railEl.addEventListener("pointercancel", release, options);
-
-      // The dial: the angle the pointer sweeps around its centre is the zoom. Only the change in
-      // angle counts, so it does not matter where on the dial the thumb lands.
-      let dialTurn: { angle: number } | null = null;
-      const angleOf = (event: PointerEvent) => {
-        const rect = dialEl.getBoundingClientRect();
-        return Math.atan2(
-          event.clientY - (rect.top + rect.height / 2),
-          event.clientX - (rect.left + rect.width / 2),
-        );
-      };
-      dialEl.addEventListener("pointerdown", (event) => {
-        cancelAnimationFrame(zoomFrame);
-        dialEl.setPointerCapture(event.pointerId);
-        dialEl.setAttribute("data-active", "");
-        dialTurn = { angle: angleOf(event) };
-        event.preventDefault();
-      }, options);
-      dialEl.addEventListener("pointermove", (event) => {
-        if (!dialTurn || !dialEl.hasPointerCapture(event.pointerId)) return;
-        const angle = angleOf(event);
-        const before = Math.floor(Math.log2(decadePx));
-        zoomTo(
-          decadePx * dialFactor(angleDelta(dialTurn.angle, angle)),
-          logAt(reticleY),
-          reticleY,
-        );
-        dialTurn.angle = angle;
-        // A tick under the thumb at every doubling, where the device can.
-        if (Math.floor(Math.log2(decadePx)) !== before) navigator.vibrate?.(4);
-      }, options);
-      const releaseDial = () => {
-        dialTurn = null;
-        dialEl.removeAttribute("data-active");
-      };
-      dialEl.addEventListener("pointerup", releaseDial, options);
-      dialEl.addEventListener("pointercancel", releaseDial, options);
-      dialEl.addEventListener("wheel", (event) => {
-        event.preventDefault();
-        cancelAnimationFrame(zoomFrame);
-        zoomTo(
-          decadePx * Math.exp(-event.deltaY * 0.004),
-          logAt(reticleY),
-          reticleY,
-        );
-      }, { ...options, passive: false });
 
       // --- start -------------------------------------------------------------------------------
 
@@ -644,35 +676,6 @@ export const Explorer = clientEntry(
           />
         </div>
 
-        <div
-          mix={[ref((node) => (dial = node as HTMLElement)), dialStyle]}
-          role="slider"
-          aria-label="ズーム。回すと拡大縮小（時計回りで拡大）"
-        >
-          <div
-            mix={[
-              ref((node) => (dialFace = node as HTMLElement)),
-              dialFaceStyle,
-            ]}
-          >
-            {Array.from({ length: 24 }, (_, i) => (
-              <i
-                key={`t${i}`}
-                style={{ rotate: `${i * 15}deg` }}
-                data-major={i % 6 === 0 ? "" : undefined}
-              />
-            ))}
-          </div>
-          <span
-            mix={[
-              ref((node) => (dialLabel = node as HTMLElement)),
-              dialLabelStyle,
-            ]}
-          >
-            {`${DEFAULT_SPAN}桁`}
-          </span>
-        </div>
-
         <section
           mix={[
             ref((node) => (detail.root = node as HTMLElement)),
@@ -681,7 +684,7 @@ export const Explorer = clientEntry(
           data-empty=""
         >
           <p>
-            上下にスワイプで移動。右下のダイヤルを回して拡大縮小（ピンチも可）、右端のバーで一気に移動
+            上下にスワイプで移動。左右にスワイプで拡大縮小（指の下は動かない）。右端のバーで一気に移動
           </p>
           <small mix={ref((node) => (detail.label = node as HTMLElement))} />
           <h2 mix={ref((node) => (detail.name = node as HTMLElement))} />
@@ -720,11 +723,7 @@ const tile = (fine: boolean) => {
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 };
 
-/** The dial's diameter, px — a comfortable thumb circle. */
-const DIAL_SIZE = 92;
-/** Its gap above the bottom edge, px: in the thumb's reach, clear of the home indicator. */
-const DIAL_BOTTOM = 16;
-/** The header band and, under it, the reading panel. Controls live at the bottom. */
+/** The header band and, under it, the reading panel. */
 const HEADER_H = "3.2rem";
 const DETAIL_H = "8.2rem";
 
@@ -925,8 +924,7 @@ const railStyle = css({
   right: 0,
   width: "40px",
   top: `calc(${safeTop} + ${HEADER_H} + ${DETAIL_H} + 8px)`,
-  // Clear of the dial below it.
-  bottom: `calc(${safeBottom} + ${DIAL_BOTTOM + DIAL_SIZE + 12}px)`,
+  bottom: `calc(${safeBottom} + 16px)`,
   borderLeft: "1px solid rgb(255 255 255 / 0.12)",
   background: "rgb(0 0 0 / 0.18)",
   touchAction: "none",
@@ -986,47 +984,4 @@ const detailStyle = css({
   "& > p:first-child": { margin: 0, color: faint, fontSize: "0.85rem" },
   "&[data-empty] > :not(:first-child)": { display: "none" },
   "&:not([data-empty]) > :first-child": { display: "none" },
-});
-
-const dialStyle = css({
-  position: "fixed",
-  right: "8px",
-  bottom: `calc(${safeBottom} + ${DIAL_BOTTOM}px)`,
-  width: `${DIAL_SIZE}px`,
-  height: `${DIAL_SIZE}px`,
-  borderRadius: "50%",
-  border: "1px solid rgb(255 255 255 / 0.3)",
-  background: `radial-gradient(circle, ${glass} 45%, rgb(255 255 255 / 0.08))`,
-  boxShadow: "0 4px 16px rgb(0 0 0 / 0.4)",
-  touchAction: "none",
-  cursor: "grab",
-  "&[data-active]": { cursor: "grabbing", borderColor: accent },
-});
-
-const dialFaceStyle = css({
-  position: "absolute",
-  inset: 0,
-  "& i": {
-    position: "absolute",
-    left: "50%",
-    top: "4px",
-    width: "2px",
-    height: "8px",
-    marginLeft: "-1px",
-    borderRadius: "1px",
-    background: faint,
-    transformOrigin: `1px ${DIAL_SIZE / 2 - 4}px`,
-  },
-  "& i[data-major]": { height: "13px", background: accent },
-});
-
-const dialLabelStyle = css({
-  position: "absolute",
-  inset: 0,
-  display: "grid",
-  placeItems: "center",
-  fontSize: "0.72rem",
-  fontWeight: 700,
-  color: ink,
-  pointerEvents: "none",
 });

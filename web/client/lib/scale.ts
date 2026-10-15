@@ -257,28 +257,26 @@ export function hueAt(fraction: number): number {
   return 270 - f * 240;
 }
 
-// --- the dial ------------------------------------------------------------------------------
+// --- horizontal swipe zoom ------------------------------------------------------------------
 
-/** One full turn of the dial multiplies the zoom by this. */
-export const DIAL_TURN_FACTOR = 10;
+/** A sideways swipe across the whole screen width zooms by this factor. */
+export const SWIPE_WIDTH_FACTOR = 10;
+
+/** The zoom factor for a sideways swipe of `dx` px on a screen `width` px wide (right = in). */
+export function swipeFactor(dx: number, width: number): number {
+  return SWIPE_WIDTH_FACTOR ** (dx / Math.max(width, 1));
+}
 
 /**
- * The signed angle from `from` to `to`, in (−π, π] — the short way round, so a pointer crossing
- * the ±π seam behind the dial's centre is not read as a full turn back.
+ * Whether a one-finger move has shown its direction yet, and which: `null` while it is still
+ * within `slop` px of where it started, then `"zoom"` for mostly sideways and `"scroll"` for
+ * everything else. Decided once per touch, so a swipe never flips between the two.
  */
-export function angleDelta(from: number, to: number): number {
-  let d = (to - from) % (2 * Math.PI);
-  if (d > Math.PI) d -= 2 * Math.PI;
-  if (d <= -Math.PI) d += 2 * Math.PI;
-  return d;
-}
-
-/** The zoom factor for turning the dial by `radians` (clockwise positive = zoom in). */
-export function dialFactor(radians: number): number {
-  return DIAL_TURN_FACTOR ** (radians / (2 * Math.PI));
-}
-
-/** The dial's resting angle for a zoom, in degrees: it turns exactly with the finger. */
-export function dialAngle(decadePx: number): number {
-  return (Math.log(decadePx) / Math.log(DIAL_TURN_FACTOR)) * 360;
+export function swipeAxis(
+  dx: number,
+  dy: number,
+  slop = 8,
+): "zoom" | "scroll" | null {
+  if (Math.hypot(dx, dy) < slop) return null;
+  return Math.abs(dx) > Math.abs(dy) * 1.2 ? "zoom" : "scroll";
 }

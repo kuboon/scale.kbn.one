@@ -2,14 +2,13 @@ import { assert, assertAlmostEquals, assertEquals } from "@std/assert";
 
 import {
   anchoredScroll,
-  angleDelta,
   captionStep,
   clampDecadePx,
-  dialAngle,
-  dialFactor,
   logToY,
   placeCards,
   readout,
+  swipeAxis,
+  swipeFactor,
   toAxis,
   yToLog,
 } from "../../client/lib/scale.ts";
@@ -92,14 +91,17 @@ Deno.test("readout", () => {
   assertEquals(readout("length", 0), "約1 m");
 });
 
-Deno.test("angleDelta goes the short way round the seam", () => {
-  assertAlmostEquals(angleDelta(0.1, 0.3), 0.2);
-  assertAlmostEquals(angleDelta(3.1, -3.1), 2 * Math.PI - 6.2);
-  assertAlmostEquals(angleDelta(-3.1, 3.1), -(2 * Math.PI - 6.2));
+Deno.test("a full-width swipe right zooms in ×10, left zooms out", () => {
+  assertAlmostEquals(swipeFactor(390, 390), 10);
+  assertAlmostEquals(swipeFactor(-195, 390), 1 / Math.sqrt(10));
+  assertEquals(swipeFactor(0, 390), 1);
 });
 
-Deno.test("one clockwise turn of the dial zooms in ×10, and the dial follows", () => {
-  assertAlmostEquals(dialFactor(2 * Math.PI), 10);
-  assertAlmostEquals(dialFactor(-Math.PI), 1 / Math.sqrt(10));
-  assertAlmostEquals(dialAngle(1000) - dialAngle(100), 360);
+Deno.test("swipeAxis waits out the slop, then picks a side", () => {
+  assertEquals(swipeAxis(3, 4), null);
+  assertEquals(swipeAxis(20, 5), "zoom");
+  assertEquals(swipeAxis(-20, 5), "zoom");
+  assertEquals(swipeAxis(5, 20), "scroll");
+  // A diagonal goes to the browser: scrolling is the default.
+  assertEquals(swipeAxis(10, 10), "scroll");
 });
