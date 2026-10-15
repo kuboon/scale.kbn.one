@@ -56,6 +56,8 @@ export interface ExplorerProps {
 const AXIS_X = 78;
 /** Where the reticle sits, as a fraction of the screen height. */
 const RETICLE = 0.6;
+/** An entry this close to the reticle, px, is read as being on it. */
+const SNAP_PX = 3;
 /** Decades per screen height to start with. */
 const DEFAULT_SPAN = 3;
 /** How long the `−` `+` buttons and a double tap take to zoom. */
@@ -230,12 +232,6 @@ export const Explorer = clientEntry(
 
       let hashTimer: ReturnType<typeof setTimeout> | undefined;
       function update(): void {
-        const at = logAt(reticleY);
-        if (readoutEl) readoutEl.textContent = readout(kind, at);
-        if (powerEl) {
-          powerEl.textContent = `10${superscript(at.toFixed(2))}`;
-        }
-
         // The entry nearest the reticle, if one is within a quarter of the screen.
         let best = -1;
         let bestDist = viewH * 0.25;
@@ -245,6 +241,19 @@ export const Explorer = clientEntry(
           if (d < bestDist) [best, bestDist] = [i, d];
         });
         setFocus(best);
+
+        // What the line reads. Scrolling lands on whole pixels, so a dot brought to the line can
+        // sit a pixel off it — and zoomed out, a pixel is a few percent of the value. An entry
+        // that close is on the line as far as anyone can see, so the readout is its own label
+        // (which is also how "現在" and calendar years like "1868年" read as themselves).
+        const snapped = best >= 0 && bestDist <= SNAP_PX ? points[best] : null;
+        const at = snapped ? snapped.log : logAt(reticleY);
+        if (readoutEl) {
+          readoutEl.textContent = snapped ? snapped.label : readout(kind, at);
+        }
+        if (powerEl) {
+          powerEl.textContent = `10${superscript(at.toFixed(2))}`;
+        }
 
         rootEl.style.setProperty("--hue", String(hueAt((hi - at) / span)));
 
