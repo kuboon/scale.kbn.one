@@ -256,3 +256,27 @@ export function hueAt(fraction: number): number {
   const f = Math.min(Math.max(fraction, 0), 1);
   return 270 - f * 240;
 }
+
+// --- horizontal swipe zoom ------------------------------------------------------------------
+
+/** A sideways swipe across the whole screen width zooms by this factor. */
+export const SWIPE_WIDTH_FACTOR = 10;
+
+/** The zoom factor for a sideways swipe of `dx` px on a screen `width` px wide (right = in). */
+export function swipeFactor(dx: number, width: number): number {
+  return SWIPE_WIDTH_FACTOR ** (dx / Math.max(width, 1));
+}
+
+/**
+ * Whether a one-finger move has shown its direction yet, and which: `null` while it is still
+ * within `slop` px of where it started, then `"zoom"` for mostly sideways and `"scroll"` for
+ * everything else. Decided once per touch, so a swipe never flips between the two.
+ */
+export function swipeAxis(
+  dx: number,
+  dy: number,
+  slop = 8,
+): "zoom" | "scroll" | null {
+  if (Math.hypot(dx, dy) < slop) return null;
+  return Math.abs(dx) > Math.abs(dy) * 1.2 ? "zoom" : "scroll";
+}

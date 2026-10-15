@@ -7,6 +7,8 @@ import {
   logToY,
   placeCards,
   readout,
+  swipeAxis,
+  swipeFactor,
   toAxis,
   yToLog,
 } from "../../client/lib/scale.ts";
@@ -87,4 +89,19 @@ Deno.test("placeCards always shows the pinned card", () => {
 Deno.test("readout", () => {
   assertEquals(readout("history", 9), "約10億年前");
   assertEquals(readout("length", 0), "約1 m");
+});
+
+Deno.test("a full-width swipe right zooms in ×10, left zooms out", () => {
+  assertAlmostEquals(swipeFactor(390, 390), 10);
+  assertAlmostEquals(swipeFactor(-195, 390), 1 / Math.sqrt(10));
+  assertEquals(swipeFactor(0, 390), 1);
+});
+
+Deno.test("swipeAxis waits out the slop, then picks a side", () => {
+  assertEquals(swipeAxis(3, 4), null);
+  assertEquals(swipeAxis(20, 5), "zoom");
+  assertEquals(swipeAxis(-20, 5), "zoom");
+  assertEquals(swipeAxis(5, 20), "scroll");
+  // A diagonal goes to the browser: scrolling is the default.
+  assertEquals(swipeAxis(10, 10), "scroll");
 });

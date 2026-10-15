@@ -9,12 +9,17 @@
  * - **Pinch** (two fingers) changes how tall a decade is, anchored between the fingers.
  * - **Double-tap and drag** (one thumb, the maps gesture): tap, then touch again and drag down to
  *   zoom in, up to zoom out. A plain double tap zooms in ×2.
+ * - **Swipe sideways, anywhere**: the value under the finger stays under it while everything else
+ *   spreads away (right) or gathers in (left). A swipe across the full screen width is ×10, and a
+ *   flick carries on for a moment. Which way a touch goes is settled in its first few pixels
+ *   (`swipeAxis`): mostly sideways zooms, anything else is the browser's own vertical scroll.
  * - **Ctrl + wheel / trackpad pinch** on a desktop, and the `−` `+` buttons and keys anywhere.
  * - **The rail** on the right edge is the whole scale end to end. Drag along it to jump — the
  *   index scrubber an address book has — and it shows where the screen is within the whole.
  *
- * The reticle, a line 38% down the screen, is the reading head: its value is printed beside it, and
- * the entry nearest to it fills the panel at the bottom. Tapping a card brings it to the reticle.
+ * The reticle, a line 60% down the screen, is the reading head: its value is printed beside it, and
+ * the entry nearest to it fills the panel at the top. Tapping a card brings it to the reticle.
+ * Reading goes at the top; the bottom of the screen is left to the thumb.
  *
  * Positions are CSS: every dot, caption and card sits at `calc(var(--pad-top) + (hi − log) ×
  * var(--decade))`, so the server-rendered page is already a working scrollable scale with no
@@ -35,6 +40,8 @@ import {
   logToY,
   placeCards,
   readout,
+  swipeAxis,
+  swipeFactor,
   yToLog,
 } from "../lib/scale.ts";
 import { powerOfTen, superscript } from "../lib/format.ts";
@@ -48,7 +55,7 @@ export interface ExplorerProps {
 /** x of the axis line, px from the left. Captions sit to its left, cards to its right. */
 const AXIS_X = 78;
 /** Where the reticle sits, as a fraction of the screen height. */
-const RETICLE = 0.38;
+const RETICLE = 0.6;
 /** Decades per screen height to start with. */
 const DEFAULT_SPAN = 3;
 /** How long the `−` `+` buttons and a double tap take to zoom. */
@@ -174,6 +181,20 @@ export const Explorer = clientEntry(
         animateZoom(decadePx * factor, screenY);
       }
 
+      /** Lets a flicked swipe run on, slowing down; `v` is px/ms sideways. */
+      function coast(v: number, log: number, screenY: number): void {
+        cancelAnimationFrame(zoomFrame);
+        let last = performance.now();
+        const step = (now: number) => {
+          const dt = now - last;
+          last = now;
+          zoomTo(decadePx * swipeFactor(v * dt, viewW), log, screenY);
+          v *= 0.92 ** (dt / 16);
+          if (Math.abs(v) > 0.02) zoomFrame = requestAnimationFrame(step);
+        };
+        zoomFrame = requestAnimationFrame(step);
+      }
+
       focusPoint = (index) => {
         const point = points[index];
         if (!point) return;
@@ -293,6 +314,17 @@ export const Explorer = clientEntry(
           log: number;
           moved: boolean;
         }
+        // A one-finger touch whose direction is not known yet; it becomes a swipe or is let go.
+        | { kind: "pending"; x: number; y: number }
+        | {
+          kind: "swipe";
+          x: number;
+          px: number;
+          log: number;
+          lastX: number;
+          lastT: number;
+          v: number;
+        }
         | null;
       let gesture: Gesture = null;
       let lastTap = { time: 0, x: 0, y: 0 };
@@ -332,13 +364,51 @@ export const Explorer = clientEntry(
             moved: false,
           };
           event.preventDefault();
+          return;
         }
+        cancelAnimationFrame(zoomFrame);
+        gesture = { kind: "pending", x, y: cy };
       }, { ...options, passive: false });
 
       contentEl.addEventListener("touchmove", (event) => {
         if (!gesture) return;
-        if (event.cancelable) event.preventDefault();
         const t = event.touches;
+        if (gesture.kind === "pending" && t.length === 1) {
+          const dx = t[0].clientX - gesture.x;
+          const axis = swipeAxis(dx, t[0].clientY - gesture.y);
+          if (axis === null) return;
+          if (axis === "scroll") {
+            gesture = null;
+            return;
+          }
+          // Measured from here, so the slop the finger used up does not jump the zoom.
+          gesture = {
+            kind: "swipe",
+            x: t[0].clientX,
+            px: decadePx,
+            log: logAt(t[0].clientY),
+            lastX: t[0].clientX,
+            lastT: performance.now(),
+            v: 0,
+          };
+        }
+        if (gesture.kind === "pending") return;
+        if (event.cancelable) event.preventDefault();
+        if (gesture.kind === "swipe" && t.length === 1) {
+          // The value that was under the finger stays under it, wherever the finger goes.
+          const { clientX: x, clientY: y } = t[0];
+          zoomTo(
+            gesture.px * swipeFactor(x - gesture.x, viewW),
+            gesture.log,
+            y,
+          );
+          const now = performance.now();
+          const dt = Math.max(now - gesture.lastT, 1);
+          gesture.v = 0.8 * ((x - gesture.lastX) / dt) + 0.2 * gesture.v;
+          gesture.lastX = x;
+          gesture.lastT = now;
+          return;
+        }
         if (gesture.kind === "pinch" && t.length >= 2) {
           // The value under the fingers follows the fingers, so a pinch can pan as well.
           zoomTo(
@@ -355,6 +425,17 @@ export const Explorer = clientEntry(
 
       const endTouch = (event: TouchEvent) => {
         const now = performance.now();
+        if (gesture?.kind === "swipe") {
+          const touch = event.changedTouches[0];
+          const fresh = now - gesture.lastT < 80;
+          if (touch && fresh && Math.abs(gesture.v) > 0.2) {
+            coast(gesture.v, gesture.log, touch.clientY);
+          }
+          gesture = null;
+          lastTap = { time: 0, x: 0, y: 0 };
+          return;
+        }
+        if (gesture?.kind === "pending") gesture = null;
         if (gesture?.kind === "drag" && event.touches.length === 0) {
           // A second tap that never moved is a double tap.
           if (!gesture.moved) zoomBy(2, gesture.startY);
@@ -390,6 +471,17 @@ export const Explorer = clientEntry(
 
       // A trackpad pinch arrives as a wheel event with `ctrlKey` set, and so does Ctrl + wheel.
       win.addEventListener("wheel", (event) => {
+        // A sideways two-finger swipe on a trackpad zooms, as a sideways swipe does on a phone.
+        if (!event.ctrlKey && Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+          event.preventDefault();
+          cancelAnimationFrame(zoomFrame);
+          zoomTo(
+            decadePx * swipeFactor(-event.deltaX, viewW),
+            logAt(event.clientY),
+            event.clientY,
+          );
+          return;
+        }
         if (!event.ctrlKey) return;
         event.preventDefault();
         cancelAnimationFrame(zoomFrame);
@@ -402,12 +494,6 @@ export const Explorer = clientEntry(
         if (event.key === "+" || event.key === "=") zoomBy(2);
         else if (event.key === "-" || event.key === "_") zoomBy(0.5);
       }, options);
-
-      rootEl.querySelectorAll<HTMLElement>("[data-zoom]").forEach((button) => {
-        button.addEventListener("click", () => {
-          zoomBy(Number(button.dataset.zoom));
-        }, options);
-      });
 
       // The rail: press anywhere on it and drag to scrub through the whole scale.
       const scrub = (event: PointerEvent) => {
@@ -548,14 +634,6 @@ export const Explorer = clientEntry(
             <h1>{axis.title}</h1>
             <p>{axis.subtitle}</p>
           </div>
-          <div mix={zoomButtonsStyle}>
-            <button type="button" data-zoom="0.5" aria-label="ズームアウト">
-              −
-            </button>
-            <button type="button" data-zoom="2" aria-label="ズームイン">
-              +
-            </button>
-          </div>
         </header>
 
         <div
@@ -606,7 +684,7 @@ export const Explorer = clientEntry(
           data-empty=""
         >
           <p>
-            上下にスワイプで移動・ピンチかダブルタップ＋ドラッグで拡大縮小・右端のバーで一気に移動
+            上下にスワイプで移動。左右にスワイプで拡大縮小（指の下は動かない）。右端のバーで一気に移動
           </p>
           <small mix={ref((node) => (detail.label = node as HTMLElement))} />
           <h2 mix={ref((node) => (detail.name = node as HTMLElement))} />
@@ -645,6 +723,10 @@ const tile = (fine: boolean) => {
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 };
 
+/** The header band and, under it, the reading panel. */
+const HEADER_H = "3.2rem";
+const DETAIL_H = "8.2rem";
+
 const rootStyle = css({
   position: "relative",
   color: ink,
@@ -664,13 +746,13 @@ const backdropStyle = css({
   inset: 0,
   zIndex: -1,
   background:
-    "radial-gradient(120% 80% at 30% 38%, hsl(var(--hue) 45% 16%), hsl(var(--hue) 50% 5%))",
+    "radial-gradient(120% 80% at 30% 60%, hsl(var(--hue) 45% 16%), hsl(var(--hue) 50% 5%))",
   transition: "background 400ms linear",
 });
 
 const contentStyle = css({
-  "--pad-top": "38lvh",
-  "--pad-bottom": "62lvh",
+  "--pad-top": "60lvh",
+  "--pad-bottom": "40lvh",
   position: "relative",
   overflow: "hidden",
 });
@@ -774,8 +856,10 @@ const headerStyle = css({
   display: "flex",
   alignItems: "center",
   gap: "0.5rem",
-  padding: `calc(${safeTop} + 0.4rem) 0.6rem 0.6rem`,
-  background: "linear-gradient(hsl(var(--hue) 50% 6% / 0.95) 60%, transparent)",
+  padding: `${safeTop} 0.6rem 0`,
+  height: `calc(${safeTop} + ${HEADER_H})`,
+  boxSizing: "border-box",
+  background: "hsl(var(--hue) 50% 6% / 0.95)",
   pointerEvents: "none",
   "& > *": { pointerEvents: "auto" },
 });
@@ -798,22 +882,6 @@ const titleStyle = css({
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
-  },
-});
-
-const zoomButtonsStyle = css({
-  display: "flex",
-  gap: "0.35rem",
-  "& button": {
-    width: "2.4rem",
-    height: "2.4rem",
-    fontSize: "1.3rem",
-    lineHeight: 1,
-    border: `1px solid rgb(255 255 255 / 0.25)`,
-    borderRadius: "50%",
-    background: glass,
-    cursor: "pointer",
-    touchAction: "manipulation",
   },
 });
 
@@ -855,8 +923,8 @@ const railStyle = css({
   position: "fixed",
   right: 0,
   width: "40px",
-  top: `calc(${safeTop} + 3.6rem)`,
-  bottom: `calc(${safeBottom} + 8.5rem)`,
+  top: `calc(${safeTop} + ${HEADER_H} + ${DETAIL_H} + 8px)`,
+  bottom: `calc(${safeBottom} + 16px)`,
   borderLeft: "1px solid rgb(255 255 255 / 0.12)",
   background: "rgb(0 0 0 / 0.18)",
   touchAction: "none",
@@ -892,23 +960,27 @@ const railMarkStyle = css({
   pointerEvents: "none",
 });
 
+/**
+ * The reading, at the top under the header: what the reticle is on. A fixed height, so moving
+ * from a one-line entry to a long one never shifts the rail or the scale below it.
+ */
 const detailStyle = css({
   position: "fixed",
   left: 0,
   right: 0,
-  bottom: 0,
-  minHeight: `calc(${safeBottom} + 7.5rem)`,
-  maxHeight: "40vh",
+  top: `calc(${safeTop} + ${HEADER_H})`,
+  height: DETAIL_H,
+  boxSizing: "border-box",
   overflowY: "auto",
-  padding: `0.7rem 1rem calc(${safeBottom} + 0.8rem)`,
+  padding: "0.5rem 1rem 0.6rem",
   background: glass,
-  borderTop: "1px solid rgb(255 255 255 / 0.15)",
+  borderBottom: "1px solid rgb(255 255 255 / 0.15)",
   backdropFilter: "blur(10px)",
   WebkitBackdropFilter: "blur(10px)",
   "& small": { display: "block", color: accent, fontSize: "0.8rem" },
-  "& h2": { margin: "0.1rem 0 0", fontSize: "1.15rem", lineHeight: 1.3 },
+  "& h2": { margin: "0.1rem 0 0", fontSize: "1.05rem", lineHeight: 1.3 },
   "& span": { display: "block", color: faint, fontSize: "0.8rem" },
-  "& p": { margin: "0.35rem 0 0", fontSize: "0.9rem", lineHeight: 1.5 },
+  "& p": { margin: "0.25rem 0 0", fontSize: "0.85rem", lineHeight: 1.45 },
   "& > p:first-child": { margin: 0, color: faint, fontSize: "0.85rem" },
   "&[data-empty] > :not(:first-child)": { display: "none" },
   "&:not([data-empty]) > :first-child": { display: "none" },
