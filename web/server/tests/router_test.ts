@@ -16,10 +16,12 @@ Deno.test("the landing page links both scales and ships no script", async () => 
 });
 
 for (
-  const [path, first] of [["/history", "ビッグバン"], [
-    "/length",
-    "観測可能な宇宙",
-  ]]
+  const [path, first] of [
+    ["/history", "ビッグバン"],
+    ["/length", "観測可能な宇宙"],
+    ["/history/fisheye", "ビッグバン"],
+    ["/length/fisheye", "観測可能な宇宙"],
+  ]
 ) {
   Deno.test(`${path} renders every entry server-side and hydrates`, async () => {
     const res = await get(path);

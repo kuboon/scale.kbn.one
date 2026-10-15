@@ -14,4 +14,7 @@ export const routes = route(base, {
   home: get("/"),
   history: get("/history"),
   length: get("/length"),
+  /** The same two scales through the fisheye lens. */
+  historyFisheye: get("/history/fisheye"),
+  lengthFisheye: get("/length/fisheye"),
 });

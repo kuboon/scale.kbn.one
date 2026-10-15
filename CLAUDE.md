@@ -4,6 +4,8 @@
 
 - `/history` — `data/history.yaml`。ビッグバン（1.38×10¹⁰ 年前）→ 現在
 - `/length` — `data/length.yaml`。プランク長（10⁻³⁵ m）→ 観測可能な宇宙
+- `/history/fisheye` `/length/fisheye` — 同じデータを魚眼レンズで（試作）。
+  ヘッダ右上の「魚眼」「通常」で行き来する
 
 UI は日本語。MIT。
 
@@ -19,8 +21,11 @@ web/client/                 # ブラウザへ渡るもの全部。deno.ns 無し
   layout.tsx                # 文書シェル（bare = ヘッダ無しの全画面ページ）
   pages/index.tsx           # トップ。JS 無し（旧 /#history 等のリダイレクト 1 行だけ）
   pages/explorer.tsx        # Axis → PageModule。2 ページはこれ 1 つ
-  islands/explorer.tsx      # 本体の island
+  islands/explorer.tsx      # スクロール版の island
+  islands/fisheye.tsx       # 魚眼版の island
+  islands/explorer-ui.ts    # 両者共通の css()（.ts なので entrypoint にならない）
   lib/scale.ts              # YAML → Axis、座標、カード配置（純関数）
+  lib/fisheye.ts            # 魚眼の射影（純関数）
   lib/format.ts             # 億・万、光年/km/m… の表記
 web/server/
   router.tsx                # 唯一のエントリ。ssg がこれをクロールして静的化
@@ -49,6 +54,20 @@ web/tests/                  # lightpanda のブラウザ smoke テスト
 - island は `render` を 1 回だけ走らせ、以後は ref で DOM を直接触る
   （`handle.update()` は呼ばない）。
 - 背景色相は読み取り位置で 270°→30°（`hueAt`）。
+
+## 魚眼版の設計
+
+- 全体を常に 1 画面に収める。焦点 `focus`（log）からの距離を全幅 `span`
+  で正規化し、 Sarkar–Brown の `G(x) = (m+1)x/(m|x|+1)` で曲げて画面の半分
+  `half` に割り当てる （`lib/fisheye.ts`）。`m = 0` で素の対数軸、`m`
+  を上げるほど焦点付近が拡大され、 遠くは端に押し縮められる。焦点の倍率は
+  `half(m+1)/span` px/桁。
+- ページはスクロールしない（`touch-action: none` の固定ステージ）。ドラッグで
+  `focus`、ピンチ / Ctrl+ホイール / ± で `m`、ダブルタップでそこへ寄って `m`
+  を倍に。
+- 位置は毎フレーム `project()` から `top` を書く。目盛りは間隔が一定でないので
+  canvas。
+- URL は `#at=<focus>&m=<m>`。モード切替リンクは `#at` を引き継ぐ。
 
 ## コマンド
 

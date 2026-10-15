@@ -116,3 +116,68 @@ Deno.test({
     }
   },
 });
+
+Deno.test({
+  name: "lightpanda: /length/fisheye が hydrate され、レンズのボタンが効く",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  async fn() {
+    const cdpPort = findFreePort();
+    const appPort = findFreePort();
+
+    const lpProc = await serveLightpanda(cdpPort);
+
+    const app = Deno.serve(
+      { port: appPort, hostname: "127.0.0.1", onListen: () => {} },
+      (req) => router.fetch(req),
+    );
+
+    try {
+      const wsUrl = await waitForCdp(cdpPort);
+
+      const browser = await puppeteer.connect({ browserWSEndpoint: wsUrl });
+      try {
+        const context = await browser.createBrowserContext();
+        const page = await context.newPage();
+
+        await page.goto(`http://127.0.0.1:${appPort}/length/fisheye`);
+        await page.waitForFunction("globalThis.__rmxReady === true", {
+          timeout: 10_000,
+        });
+        await page.waitForSelector("[data-ready]", { timeout: 5_000 });
+
+        const hash = () => page.evaluate(() => location.hash);
+        await page.waitForFunction(() => location.hash.includes("m="), {
+          timeout: 5_000,
+        });
+        const before = await hash();
+
+        await page.$eval(
+          'button[data-zoom="2"]',
+          (el) => (el as HTMLButtonElement).click(),
+        );
+        await page.waitForFunction(
+          (prev: string) => location.hash !== prev,
+          { timeout: 5_000 },
+          before,
+        );
+
+        const readout = await page.$eval(
+          "output",
+          (el) => el.textContent?.trim() ?? "",
+        );
+        assert(readout.endsWith(" m"), `readout: ${readout}`);
+
+        await page.close();
+        await context.close();
+      } finally {
+        await browser.disconnect();
+      }
+    } finally {
+      try {
+        lpProc.kill("SIGTERM");
+      } catch { /* already gone */ }
+      await app.shutdown();
+    }
+  },
+});

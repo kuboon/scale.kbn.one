@@ -66,6 +66,17 @@ export default function Home(_handle: Handle) {
         ))}
       </div>
 
+      <h2>魚眼表示（試作）</h2>
+      <p>
+        端から端まで全部を常に 1
+        画面に収め、読み取り線のまわりだけを拡大する見せ方。
+        ズームで迷子にならない代わりに、遠くの桁は画面の端に押し縮められる。各ページ右上の「魚眼」「通常」で切り替えられる。
+      </p>
+      <p>
+        <a href={routes.historyFisheye.href()}>宇宙史を魚眼で →</a>{" "}
+        <a href={routes.lengthFisheye.href()}>長さを魚眼で →</a>
+      </p>
+
       <h2>操作</h2>
       <ul mix={listStyle}>
         <li>

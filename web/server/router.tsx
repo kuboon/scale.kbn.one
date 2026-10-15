@@ -25,7 +25,7 @@ import { Layout, type PageModule } from "../client/layout.tsx";
 import { routes } from "../client/routes.ts";
 
 import * as Home from "../client/pages/index.tsx";
-import { explorerPage } from "../client/pages/explorer.tsx";
+import { type ExplorerMode, explorerPage } from "../client/pages/explorer.tsx";
 
 /** Deploy path prefix. The build strips it back off when writing, so output lands at the root. */
 export { base };
@@ -71,23 +71,33 @@ declare module "@remix-run/fetch-router" {
   }
 }
 
+const DESCRIPTIONS = {
+  history: "ビッグバンから現在まで、138億年を対数のものさしで。",
+  length: "プランク長から観測可能な宇宙まで、63桁を対数のものさしで。",
+};
+
+/** One scale in one mode, with the header's switch pointing at the other. */
+function scalePage(name: "history" | "length", mode: ExplorerMode) {
+  const scroll = routes[name];
+  const fisheye = name === "history"
+    ? routes.historyFisheye
+    : routes.lengthFisheye;
+  const [route, alt] = mode === "fisheye"
+    ? [fisheye, scroll]
+    : [scroll, fisheye];
+  return pageAction(
+    route,
+    explorerPage(scales[name], DESCRIPTIONS[name], mode, alt.href()),
+  );
+}
+
 const pages = createController(routes, {
   actions: {
     home: pageAction(routes.home, Home),
-    history: pageAction(
-      routes.history,
-      explorerPage(
-        scales.history,
-        "ビッグバンから現在まで、138億年を対数のものさしで。",
-      ),
-    ),
-    length: pageAction(
-      routes.length,
-      explorerPage(
-        scales.length,
-        "プランク長から観測可能な宇宙まで、63桁を対数のものさしで。",
-      ),
-    ),
+    history: scalePage("history", "scroll"),
+    length: scalePage("length", "scroll"),
+    historyFisheye: scalePage("history", "fisheye"),
+    lengthFisheye: scalePage("length", "fisheye"),
   },
 });
 
