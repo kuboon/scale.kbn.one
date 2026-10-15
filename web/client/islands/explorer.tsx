@@ -15,8 +15,9 @@
  * - **The rail** on the right edge is the whole scale end to end. Drag along it to jump — the
  *   index scrubber an address book has — and it shows where the screen is within the whole.
  *
- * The reticle, a line 38% down the screen, is the reading head: its value is printed beside it, and
- * the entry nearest to it fills the panel at the bottom. Tapping a card brings it to the reticle.
+ * The reticle, a line 60% down the screen, is the reading head: its value is printed beside it, and
+ * the entry nearest to it fills the panel at the top. Tapping a card brings it to the reticle.
+ * Reading goes at the top and the controls (the dial) at the bottom, where the thumb is.
  *
  * Positions are CSS: every dot, caption and card sits at `calc(var(--pad-top) + (hi − log) ×
  * var(--decade))`, so the server-rendered page is already a working scrollable scale with no
@@ -53,7 +54,7 @@ export interface ExplorerProps {
 /** x of the axis line, px from the left. Captions sit to its left, cards to its right. */
 const AXIS_X = 78;
 /** Where the reticle sits, as a fraction of the screen height. */
-const RETICLE = 0.38;
+const RETICLE = 0.6;
 /** Decades per screen height to start with. */
 const DEFAULT_SPAN = 3;
 /** How long the `−` `+` buttons and a double tap take to zoom. */
@@ -416,12 +417,6 @@ export const Explorer = clientEntry(
         else if (event.key === "-" || event.key === "_") zoomBy(0.5);
       }, options);
 
-      rootEl.querySelectorAll<HTMLElement>("[data-zoom]").forEach((button) => {
-        button.addEventListener("click", () => {
-          zoomBy(Number(button.dataset.zoom));
-        }, options);
-      });
-
       // The rail: press anywhere on it and drag to scrub through the whole scale.
       const scrub = (event: PointerEvent) => {
         const rect = railEl.getBoundingClientRect();
@@ -607,14 +602,6 @@ export const Explorer = clientEntry(
             <h1>{axis.title}</h1>
             <p>{axis.subtitle}</p>
           </div>
-          <div mix={zoomButtonsStyle}>
-            <button type="button" data-zoom="0.5" aria-label="ズームアウト">
-              −
-            </button>
-            <button type="button" data-zoom="2" aria-label="ズームイン">
-              +
-            </button>
-          </div>
         </header>
 
         <div
@@ -694,7 +681,7 @@ export const Explorer = clientEntry(
           data-empty=""
         >
           <p>
-            上下にスワイプで移動・右下のダイヤルを回して拡大縮小（ピンチも可）・右端のバーで一気に移動
+            上下にスワイプで移動。右下のダイヤルを回して拡大縮小（ピンチも可）、右端のバーで一気に移動
           </p>
           <small mix={ref((node) => (detail.label = node as HTMLElement))} />
           <h2 mix={ref((node) => (detail.name = node as HTMLElement))} />
@@ -735,6 +722,11 @@ const tile = (fine: boolean) => {
 
 /** The dial's diameter, px — a comfortable thumb circle. */
 const DIAL_SIZE = 92;
+/** Its gap above the bottom edge, px: in the thumb's reach, clear of the home indicator. */
+const DIAL_BOTTOM = 16;
+/** The header band and, under it, the reading panel. Controls live at the bottom. */
+const HEADER_H = "3.2rem";
+const DETAIL_H = "8.2rem";
 
 const rootStyle = css({
   position: "relative",
@@ -755,13 +747,13 @@ const backdropStyle = css({
   inset: 0,
   zIndex: -1,
   background:
-    "radial-gradient(120% 80% at 30% 38%, hsl(var(--hue) 45% 16%), hsl(var(--hue) 50% 5%))",
+    "radial-gradient(120% 80% at 30% 60%, hsl(var(--hue) 45% 16%), hsl(var(--hue) 50% 5%))",
   transition: "background 400ms linear",
 });
 
 const contentStyle = css({
-  "--pad-top": "38lvh",
-  "--pad-bottom": "62lvh",
+  "--pad-top": "60lvh",
+  "--pad-bottom": "40lvh",
   position: "relative",
   overflow: "hidden",
 });
@@ -865,8 +857,10 @@ const headerStyle = css({
   display: "flex",
   alignItems: "center",
   gap: "0.5rem",
-  padding: `calc(${safeTop} + 0.4rem) 0.6rem 0.6rem`,
-  background: "linear-gradient(hsl(var(--hue) 50% 6% / 0.95) 60%, transparent)",
+  padding: `${safeTop} 0.6rem 0`,
+  height: `calc(${safeTop} + ${HEADER_H})`,
+  boxSizing: "border-box",
+  background: "hsl(var(--hue) 50% 6% / 0.95)",
   pointerEvents: "none",
   "& > *": { pointerEvents: "auto" },
 });
@@ -889,22 +883,6 @@ const titleStyle = css({
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
-  },
-});
-
-const zoomButtonsStyle = css({
-  display: "flex",
-  gap: "0.35rem",
-  "& button": {
-    width: "2.4rem",
-    height: "2.4rem",
-    fontSize: "1.3rem",
-    lineHeight: 1,
-    border: `1px solid rgb(255 255 255 / 0.25)`,
-    borderRadius: "50%",
-    background: glass,
-    cursor: "pointer",
-    touchAction: "manipulation",
   },
 });
 
@@ -946,9 +924,9 @@ const railStyle = css({
   position: "fixed",
   right: 0,
   width: "40px",
-  top: `calc(${safeTop} + 3.6rem)`,
+  top: `calc(${safeTop} + ${HEADER_H} + ${DETAIL_H} + 8px)`,
   // Clear of the dial below it.
-  bottom: `calc(${safeBottom} + 8.5rem + ${DIAL_SIZE + 12}px)`,
+  bottom: `calc(${safeBottom} + ${DIAL_BOTTOM + DIAL_SIZE + 12}px)`,
   borderLeft: "1px solid rgb(255 255 255 / 0.12)",
   background: "rgb(0 0 0 / 0.18)",
   touchAction: "none",
@@ -984,23 +962,27 @@ const railMarkStyle = css({
   pointerEvents: "none",
 });
 
+/**
+ * The reading, at the top under the header: what the reticle is on. A fixed height, so moving
+ * from a one-line entry to a long one never shifts the rail or the scale below it.
+ */
 const detailStyle = css({
   position: "fixed",
   left: 0,
   right: 0,
-  bottom: 0,
-  minHeight: `calc(${safeBottom} + 7.5rem)`,
-  maxHeight: "40vh",
+  top: `calc(${safeTop} + ${HEADER_H})`,
+  height: DETAIL_H,
+  boxSizing: "border-box",
   overflowY: "auto",
-  padding: `0.7rem 1rem calc(${safeBottom} + 0.8rem)`,
+  padding: "0.5rem 1rem 0.6rem",
   background: glass,
-  borderTop: "1px solid rgb(255 255 255 / 0.15)",
+  borderBottom: "1px solid rgb(255 255 255 / 0.15)",
   backdropFilter: "blur(10px)",
   WebkitBackdropFilter: "blur(10px)",
   "& small": { display: "block", color: accent, fontSize: "0.8rem" },
-  "& h2": { margin: "0.1rem 0 0", fontSize: "1.15rem", lineHeight: 1.3 },
+  "& h2": { margin: "0.1rem 0 0", fontSize: "1.05rem", lineHeight: 1.3 },
   "& span": { display: "block", color: faint, fontSize: "0.8rem" },
-  "& p": { margin: "0.35rem 0 0", fontSize: "0.9rem", lineHeight: 1.5 },
+  "& p": { margin: "0.25rem 0 0", fontSize: "0.85rem", lineHeight: 1.45 },
   "& > p:first-child": { margin: 0, color: faint, fontSize: "0.85rem" },
   "&[data-empty] > :not(:first-child)": { display: "none" },
   "&:not([data-empty]) > :first-child": { display: "none" },
@@ -1009,7 +991,7 @@ const detailStyle = css({
 const dialStyle = css({
   position: "fixed",
   right: "8px",
-  bottom: `calc(${safeBottom} + 8.2rem)`,
+  bottom: `calc(${safeBottom} + ${DIAL_BOTTOM}px)`,
   width: `${DIAL_SIZE}px`,
   height: `${DIAL_SIZE}px`,
   borderRadius: "50%",

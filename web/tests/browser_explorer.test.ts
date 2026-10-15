@@ -49,7 +49,7 @@ async function serveLightpanda(port: number) {
 }
 
 Deno.test({
-  name: "lightpanda: /history の explorer が hydrate され、ズームボタンが効く",
+  name: "lightpanda: /history の explorer が hydrate され、+ キーでズームする",
   sanitizeResources: false,
   sanitizeOps: false,
   async fn() {
@@ -85,10 +85,8 @@ Deno.test({
         const before = await decade();
         assert(before.endsWith("px"), `--decade is set by script: ${before}`);
 
-        await page.$eval(
-          'button[data-zoom="2"]',
-          (el) => (el as HTMLButtonElement).click(),
-        );
+        // The `+` key zooms in ×2, as the dial would.
+        await page.keyboard.press("+");
         await page.waitForFunction(
           (prev: string) =>
             (document.querySelector("[style*='--decade']") as HTMLElement)
