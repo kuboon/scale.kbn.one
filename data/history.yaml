@@ -279,6 +279,16 @@ entries:
     nameEn: Rise of the Internet
     description: World Wide Webが一般に普及（1990年代）
 
+  - ad: 1999
+    name: iモード開始（ガラケー時代の幕開け）
+    nameEn: i-mode Launches
+    description: ドコモがiモードを開始し、携帯でネットとメールが使えるように。カメラ付き携帯・おサイフケータイ・ワンセグと独自進化した「ガラケー」は2000年代半ばに全盛期を迎える
+
+  - ad: 2008
+    name: iPhone日本上陸（ガラケーの終わりの始まり）
+    nameEn: iPhone Arrives in Japan
+    description: iPhone 3Gが日本で発売。2011〜2012年頃には出荷台数でスマホがガラケーを逆転し、2020年代の3G停波でガラケーは役目を終える
+
   - exponent: 1
     value: 1.5
     name: スマートフォンの時代
