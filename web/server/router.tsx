@@ -88,6 +88,13 @@ const pages = createController(routes, {
         "プランク長から観測可能な宇宙まで、63桁を対数のものさしで。",
       ),
     ),
+    money: pageAction(
+      routes.money,
+      explorerPage(
+        scales.money,
+        "1円玉の製造費から日本中の家計が持つお金の合計まで、16桁のお金を対数のものさしで。",
+      ),
+    ),
   },
 });
 

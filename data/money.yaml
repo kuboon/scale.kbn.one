@@ -1,0 +1,332 @@
+meta:
+  id: money
+  title: お金のスケール
+  subtitle: 1円から、日本中の家計が持つお金の合計まで
+  unit: 円
+  unitSymbol: 円
+  minExponent: 0
+  maxExponent: 15.4
+
+# 値は概算。年度・出典は description に書く（2026年10月時点で確認）。
+
+entries:
+  # --- 1万円以下：豆知識 ---
+  - exponent: 0
+    value: 3
+    name: 1円玉1枚をつくる費用
+    nameEn: Cost to Mint a 1-Yen Coin
+    description: 額面より製造費のほうが高い。公式発表はないが2〜3円とされる
+
+  - exponent: 1
+    value: 2
+    name: 1万円札1枚をつくる費用
+    nameEn: Cost to Print a Banknote
+    description: 紙幣全体の平均（2023年度 製造費619億円 ÷ 30.3億枚）。券種別の数字は公表されていない
+
+  - exponent: 2
+    value: 1.5
+    name: 宝くじ1枚（300円）の期待値
+    nameEn: Expected Value of a 300-Yen Lottery Ticket
+    description: 賞金に回るのは売上の約半分まで（法律で5割が上限）
+
+  - exponent: 2
+    value: 2.3
+    name: スマホを1年間毎日充電した電気代
+    nameEn: A Year of Daily Phone Charging
+    description: 1日約20Wh × 365日 × 31円/kWh の試算。1回あたり0.6円ほど
+
+  - exponent: 2
+    value: 2.7
+    name: 給食1食の食材費
+    nameEn: Ingredients for One School Lunch
+    description: 公立小学校の給食費を1食あたりに直すと（2023年度）。2026年度から小学校の給食は無償化
+
+  - exponent: 2
+    value: 8.3
+    name: 衆院選の費用（有権者1人あたり）
+    nameEn: Election Cost per Voter
+    description: 1回855億円を、約1.03億人の有権者で割ると（2026年衆院選）
+
+  - exponent: 3
+    value: 2
+    exact: true
+    name: 2000円札
+    nameEn: 2,000-Yen Note
+    description: 2000年発行。いまも有効だが、流通している紙幣のうち枚数で0.5%ほど
+
+  - exponent: 3
+    value: 3
+    name: 自動販売機1台の月の電気代
+    nameEn: Monthly Electricity for a Vending Machine
+    description: 冷やす・温めるで、1台あたり月2,000〜4,000円ほど
+
+  # --- 1万円〜1億円 ---
+  - exponent: 4
+    value: 1.7
+    name: ごみ処理費（1人あたり年間）
+    nameEn: Waste Disposal per Person per Year
+    description: 家庭ごみの収集・処理に市町村が使うお金を、人口で割ると
+
+  - exponent: 4
+    value: 3.8
+    name: 救急車の出動1回にかかる費用
+    nameEn: Cost of One Ambulance Call-out
+    description: 郡山地方広域消防組合の試算（直接経費のみ）。利用者の負担はゼロ
+
+  - exponent: 5
+    value: 3.87
+    name: 医療費（国民1人あたり年間）
+    nameEn: Medical Spending per Person per Year
+    description: 2023年度。窓口で払う分は、このうち一部
+
+  - exponent: 6
+    value: 1
+    exact: true
+    name: 札束ひとつ
+    nameEn: A Bundle of Banknotes
+    description: 1万円札100枚。重さ約100g、厚さ約1cm
+
+  - exponent: 6
+    value: 4.78
+    name: 平均年収
+    nameEn: Average Annual Salary
+    description: 1年を通じて働いた給与所得者の平均（2024年分、国税庁）
+
+  - exponent: 6
+    value: 9.3
+    name: 普通国債の残高（国民1人あたり）
+    nameEn: Government Bonds per Person
+    description: 税金で返していく国の借金を、赤ちゃんも含めた人口で割ると（2026年度末見込み）
+
+  - exponent: 7
+    value: 3
+    name: 高規格救急車1台
+    nameEn: One Advanced Ambulance
+    description: 車両が約2,000万円、救命処置の資機材を積んで約3,000万円
+
+  - exponent: 7
+    value: 7
+    name: 水槽付消防ポンプ車1台
+    nameEn: One Fire Pumper Truck with Water Tank
+    description: 水を積んで駆けつける消防車。消防団用の小型ポンプ車なら約2,400万円
+
+  # --- 1億円〜1兆円 ---
+  - exponent: 8
+    value: 1
+    exact: true
+    name: 1億円の重さ
+    nameEn: The Weight of 100 Million Yen
+    description: 1万円札1枚が約1gなので、1億円で約10kg
+
+  - exponent: 8
+    value: 2.2
+    name: はしご車1台
+    nameEn: One Ladder Truck
+    description: 40m級。高層の火災に備える、いちばん高価な消防車
+
+  - exponent: 8
+    value: 2.9
+    name: 生涯賃金
+    nameEn: Lifetime Earnings
+    description: 大卒男性が同じ会社で60歳まで働いた場合（退職金を除く）。女性は約2.4億円
+
+  - exponent: 9
+    value: 1
+    exact: true
+    name: 年末ジャンボ 1等＋前後賞
+    nameEn: Year-End Jumbo Lottery Top Prize
+    description: 1等7億円と前後賞1.5億円×2
+
+  - exponent: 9
+    value: 5.9
+    name: 小さな村の年間予算
+    nameEn: Annual Budget of a Small Village
+    description: 新潟県関川村（人口約4,700人）の一般会計（2026年度）
+
+  - exponent: 10
+    value: 6.8
+    name: 人口10万人の市の年間予算
+    nameEn: Annual Budget of a City of 100,000
+    description: 小樽市（人口約10.5万人）の一般会計（2026年度）。ごみ、学校、福祉、消防・救急など
+
+  - exponent: 10
+    value: 6.5
+    name: 東京スカイツリーの総事業費
+    nameEn: Tokyo Skytree
+    description: 周辺の商業施設などを含めた総額（2012年開業）
+
+  - exponent: 10
+    value: 8.55
+    name: 衆院選1回の費用
+    nameEn: Cost of a General Election
+    description: 投票所の運営、開票、ポスター掲示場など（2026年衆院選）
+
+  - exponent: 11
+    value: 1.05
+    name: 大谷翔平の契約（10年総額）
+    nameEn: Shohei Ohtani's Contract
+    description: 2023年、ドジャースと7億ドルで契約（1ドル150円で換算）
+
+  - exponent: 11
+    value: 3.19
+    name: 東京消防庁の年間予算
+    nameEn: Tokyo Fire Department Annual Budget
+    description: 世界最大級の消防組織。救急も担う（2026年度）
+
+  - exponent: 11
+    value: 3.96
+    name: 鳥取県の年間予算
+    nameEn: Tottori Prefecture Annual Budget
+    description: 人口が最も少ない県の一般会計（2026年度）
+
+  # --- 1兆円〜100兆円 ---
+  - exponent: 12
+    value: 1.42
+    name: 東京2020オリンピックの総経費
+    nameEn: Tokyo 2020 Olympics
+    description: 大会組織委員会・東京都・国の負担の合計（2022年の最終報告）
+
+  - exponent: 12
+    value: 2.1
+    name: 横浜市の年間予算
+    nameEn: Yokohama City Annual Budget
+    description: 市町村で最大級の一般会計（2026年度）
+
+  - exponent: 12
+    value: 2.1
+    name: 全国の消防費（年間）
+    nameEn: Japan's Fire and Ambulance Services
+    description: 全国の市町村が消防・救急に使う総額。1人あたり約1.7万円（2023年度）
+
+  - exponent: 12
+    value: 3.7
+    name: 生活保護費（年間）
+    nameEn: Public Assistance
+    description: 国と自治体の負担を合わせた事業費（2025年度）
+
+  - exponent: 12
+    value: 9.04
+    name: 防衛費（年間）
+    nameEn: Defense Budget
+    description: 2026年度当初予算
+
+  - exponent: 12
+    value: 9.65
+    name: 東京都の年間予算
+    nameEn: Tokyo Metropolitan Annual Budget
+    description: 一般会計（2026年度）。鳥取県の約24倍
+
+  - exponent: 13
+    value: 1.1
+    name: リニア中央新幹線（品川〜名古屋）
+    nameEn: Chuo Shinkansen Maglev
+    description: 総工費の見込み。2025年に約7兆円から約11兆円へ増額
+
+  - exponent: 13
+    value: 1.43
+    name: 介護保険の給付（年間）
+    nameEn: Long-Term Care Benefits
+    description: 介護サービスにかかる費用のうち保険から出る分（2026年度）
+
+  - exponent: 13
+    value: 3.91
+    name: 国の社会保障関係費（年間）
+    nameEn: Social Security in the National Budget
+    description: 国の一般会計から、年金・医療・介護などに回す分（2026年度）
+
+  - exponent: 13
+    value: 4.81
+    name: 国民医療費（年間）
+    nameEn: National Medical Expenditure
+    description: 病気やけがの治療に、1年間で使われた医療費の総額（2023年度）
+
+  - exponent: 13
+    value: 6.37
+    name: 公的年金の給付（年間）
+    nameEn: Public Pension Benefits
+    description: 国民年金・厚生年金として1年間に支払われる総額（2026年度）
+
+  - exponent: 13
+    value: 8.42
+    name: 国の税収（年間）
+    nameEn: National Tax Revenue
+    description: 所得税・消費税・法人税など（2025年度決算）
+
+  - exponent: 13
+    value: 3.42
+    name: EUの予算（年間）
+    nameEn: EU Budget
+    description: EUそのものの予算で、加盟国の予算とは別（2026年度、1ユーロ177円で換算）
+
+  - exponent: 13
+    value: 8.14
+    name: フランスの国家予算（年間）
+    nameEn: France State Budget
+    description: 国の一般予算（純額）。社会保障と地方は含まず、日本の一般会計に近い（2026年度、1ユーロ177円）
+
+  - exponent: 13
+    value: 8.56
+    name: 韓国の国家予算（年間）
+    nameEn: South Korea National Budget
+    description: 中央政府の総支出。年金などの基金も含む（2026年度、100ウォン11.8円）
+
+  - exponent: 13
+    value: 9.3
+    name: ドイツの連邦予算（年間）
+    nameEn: German Federal Budget
+    description: 連邦政府の予算。州や社会保険は含まず、日本の一般会計に近い（2026年度、1ユーロ177円）
+
+  # --- 100兆円〜 ---
+  - exponent: 14
+    value: 1.02
+    name: 全国の自治体の予算（合計）
+    nameEn: Local Government Budgets, Total
+    description: 地方財政計画の規模。2026年度に初めて100兆円を超えた
+
+  - exponent: 14
+    value: 1.22
+    name: 国の一般会計予算（年間）
+    nameEn: National General Account Budget
+    description: 2026年度当初予算。歳出の約3分の1が社会保障
+
+  - exponent: 14
+    value: 1.44
+    name: 社会保障給付費（年間）
+    nameEn: Total Social Security Benefits
+    description: 年金・医療・介護・福祉などに1年間で使われる総額（2026年度）
+
+  - exponent: 14
+    value: 2.98
+    name: イギリスの政府支出（年間）
+    nameEn: UK Total Managed Expenditure
+    description: 地方・社会保障を含む公的部門全体の見通し（2026年度、1ポンド210円）
+
+  - exponent: 14
+    value: 7.09
+    name: 中国の財政支出（年間）
+    nameEn: China Government Expenditure
+    description: 中央と地方を合わせた一般公共予算（2026年、1元23.6円）
+
+  - exponent: 14
+    value: 6.73
+    name: 日本のGDP
+    nameEn: Japan's GDP
+    description: 国内で1年間に生み出された付加価値の合計（名目、2025年度）
+
+  - exponent: 15
+    value: 1.11
+    name: アメリカ連邦政府の歳出（年間）
+    nameEn: US Federal Outlays
+    description: 年金・医療保険の給付を含む総額。日本の一般会計の約9倍（2025年度実績、1ドル158円）
+
+  - exponent: 15
+    value: 1.15
+    name: 普通国債の残高
+    nameEn: Outstanding Government Bonds
+    description: 税金で返していく国の借金。GDPの約1.7倍（2026年度末見込み）
+
+  - exponent: 15
+    value: 2.52
+    name: 日本中の家計が持つお金（合計）
+    nameEn: Household Financial Assets
+    description: 全世帯の現金・預貯金・株式・投資信託・保険・年金を足したもの。1人あたり約2,000万円（2026年6月末、日銀）

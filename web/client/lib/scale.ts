@@ -10,7 +10,7 @@
  * `decadePx`.
  */
 
-import { length, powerOfTen, yearsAgo } from "./format.ts";
+import { length, powerOfTen, yearsAgo, yen } from "./format.ts";
 
 /** `meta:` in `data/*.yaml`. */
 export interface ScaleMeta {
@@ -31,6 +31,8 @@ export interface ScaleEntry {
   name: string;
   nameEn: string;
   description: string;
+  /** The amount is exact (a 2,000円 note, a 10億円 jackpot), so its label drops the "約". */
+  exact?: boolean;
 }
 
 export interface ScaleData {
@@ -39,7 +41,7 @@ export interface ScaleData {
 }
 
 /** The kinds of scale this site knows how to label. */
-export type ScaleKind = "history" | "length";
+export type ScaleKind = "history" | "length" | "money";
 
 /** One entry, placed. */
 export interface Point {
@@ -82,7 +84,9 @@ const MARGIN = 0.4;
  * @param refYear The year `ad:` entries count back from — the build's year
  */
 export function toAxis(data: ScaleData, refYear: number): Axis {
-  const kind: ScaleKind = data.meta.id === "length" ? "length" : "history";
+  const kind: ScaleKind = data.meta.id === "length" || data.meta.id === "money"
+    ? data.meta.id
+    : "history";
   const magnitudes = data.entries.map((entry) =>
     entry.ad !== undefined
       ? Math.max(refYear - entry.ad, 0)
@@ -100,6 +104,8 @@ export function toAxis(data: ScaleData, refYear: number): Axis {
         ? `${entry.ad}年`
         : kind === "length"
         ? `約${length(magnitude)}`
+        : kind === "money"
+        ? `${entry.exact ? "" : "約"}${yen(magnitude)}`
         : yearsAgo(magnitude),
       name: entry.name,
       nameEn: entry.nameEn,
@@ -113,8 +119,13 @@ export function toAxis(data: ScaleData, refYear: number): Axis {
     subtitle: data.meta.subtitle,
     hi,
     lo,
-    // History starts at the Big Bang and scrolls forward in time; length starts at human size.
-    start: kind === "history" ? points[0]?.log ?? hi : Math.log10(1.7),
+    // History starts at the Big Bang and scrolls forward in time; length starts at human size,
+    // money at a 1万円 note.
+    start: kind === "history"
+      ? points[0]?.log ?? hi
+      : kind === "money"
+      ? 4
+      : Math.log10(1.7),
     points,
   };
 }
@@ -122,7 +133,9 @@ export function toAxis(data: ScaleData, refYear: number): Axis {
 /** What a magnitude at `log` reads as on this scale. */
 export function readout(kind: ScaleKind, log: number): string {
   const n = 10 ** log;
-  return kind === "length" ? `約${length(n)}` : yearsAgo(n);
+  if (kind === "length") return `約${length(n)}`;
+  if (kind === "money") return `約${yen(n)}`;
+  return yearsAgo(n);
 }
 
 /** A decade gridline's caption: `10⁹` and what that is in words. */
@@ -131,7 +144,11 @@ export function decadeCaption(
   exponent: number,
 ): { power: string; words: string } {
   const n = 10 ** exponent;
-  const words = kind === "length" ? length(n) : yearsAgo(n).replace(/^約/, "");
+  const words = kind === "length"
+    ? length(n)
+    : kind === "money"
+    ? yen(n)
+    : yearsAgo(n).replace(/^約/, "");
   // Where no unit or counter reaches, the words would only repeat the power.
   return {
     power: powerOfTen(exponent),

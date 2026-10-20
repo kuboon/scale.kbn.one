@@ -12,14 +12,16 @@ Deno.test("the landing page links both scales and ships no script", async () => 
   const html = await res.text();
   assertStringIncludes(html, 'href="/history"');
   assertStringIncludes(html, 'href="/length"');
+  assertStringIncludes(html, 'href="/money"');
   assert(!html.includes('type="module"'));
 });
 
 for (
-  const [path, first] of [["/history", "ビッグバン"], [
-    "/length",
-    "観測可能な宇宙",
-  ]]
+  const [path, first] of [
+    ["/history", "ビッグバン"],
+    ["/length", "観測可能な宇宙"],
+    ["/money", "普通国債の残高"],
+  ]
 ) {
   Deno.test(`${path} renders every entry server-side and hydrates`, async () => {
     const res = await get(path);

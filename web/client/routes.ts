@@ -14,4 +14,5 @@ export const routes = route(base, {
   home: get("/"),
   history: get("/history"),
   length: get("/length"),
+  money: get("/money"),
 });
