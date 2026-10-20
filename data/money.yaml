@@ -252,6 +252,30 @@ entries:
     nameEn: National Tax Revenue
     description: 所得税・消費税・法人税など（2025年度決算）
 
+  - exponent: 13
+    value: 3.42
+    name: EUの予算（年間）
+    nameEn: EU Budget
+    description: EUそのものの予算で、加盟国の予算とは別（2026年度、1ユーロ177円で換算）
+
+  - exponent: 13
+    value: 8.14
+    name: フランスの国家予算（年間）
+    nameEn: France State Budget
+    description: 国の一般予算（純額）。社会保障と地方は含まず、日本の一般会計に近い（2026年度、1ユーロ177円）
+
+  - exponent: 13
+    value: 8.56
+    name: 韓国の国家予算（年間）
+    nameEn: South Korea National Budget
+    description: 中央政府の総支出。年金などの基金も含む（2026年度、100ウォン11.8円）
+
+  - exponent: 13
+    value: 9.3
+    name: ドイツの連邦予算（年間）
+    nameEn: German Federal Budget
+    description: 連邦政府の予算。州や社会保険は含まず、日本の一般会計に近い（2026年度、1ユーロ177円）
+
   # --- 100兆円〜 ---
   - exponent: 14
     value: 1.02
@@ -272,10 +296,28 @@ entries:
     description: 年金・医療・介護・福祉などに1年間で使われる総額（2026年度）
 
   - exponent: 14
+    value: 2.98
+    name: イギリスの政府支出（年間）
+    nameEn: UK Total Managed Expenditure
+    description: 地方・社会保障を含む公的部門全体の見通し（2026年度、1ポンド210円）
+
+  - exponent: 14
+    value: 7.09
+    name: 中国の財政支出（年間）
+    nameEn: China Government Expenditure
+    description: 中央と地方を合わせた一般公共予算（2026年、1元23.6円）
+
+  - exponent: 14
     value: 6.73
     name: 日本のGDP
     nameEn: Japan's GDP
     description: 国内で1年間に生み出された付加価値の合計（名目、2025年度）
+
+  - exponent: 15
+    value: 1.11
+    name: アメリカ連邦政府の歳出（年間）
+    nameEn: US Federal Outlays
+    description: 年金・医療保険の給付を含む総額。日本の一般会計の約9倍（2025年度実績、1ドル158円）
 
   - exponent: 15
     value: 1.15
