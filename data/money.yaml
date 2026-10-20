@@ -1,7 +1,7 @@
 meta:
   id: money
   title: お金のスケール
-  subtitle: 1円から日本の個人金融資産まで
+  subtitle: 1円から、日本中の家計が持つお金の合計まで
   unit: 円
   unitSymbol: 円
   minExponent: 0
@@ -285,6 +285,6 @@ entries:
 
   - exponent: 15
     value: 2.52
-    name: 個人の金融資産
+    name: 日本中の家計が持つお金（合計）
     nameEn: Household Financial Assets
-    description: 家計が持つ現金・預金・株式・保険・年金などの合計（2026年6月末）
+    description: 全世帯の現金・預貯金・株式・投資信託・保険・年金を足したもの。1人あたり約2,000万円（2026年6月末、日銀）

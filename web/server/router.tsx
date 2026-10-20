@@ -92,7 +92,7 @@ const pages = createController(routes, {
       routes.money,
       explorerPage(
         scales.money,
-        "1円玉の製造費から日本の個人金融資産まで、16桁のお金を対数のものさしで。",
+        "1円玉の製造費から日本中の家計が持つお金の合計まで、16桁のお金を対数のものさしで。",
       ),
     ),
   },
