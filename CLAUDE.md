@@ -1,9 +1,11 @@
 # CLAUDE.md — scale.kbn.one
 
-対数スケールの探検アプリ（「スケール探検」）。2 ページ:
+対数スケールの探検アプリ（「スケール探検」）。3 ページ:
 
 - `/history` — `data/history.yaml`。ビッグバン（1.38×10¹⁰ 年前）→ 現在
 - `/length` — `data/length.yaml`。プランク長（10⁻³⁵ m）→ 観測可能な宇宙
+- `/money` — `data/money.yaml`。1円 →
+  2,200兆円（個人金融資産）。表示は万・億・兆＋円
 
 UI は日本語。MIT。
 
@@ -15,10 +17,10 @@ UI は日本語。MIT。
 ```
 data/*.yaml                 # スケールのデータ（手で編集する。fmt 対象外）
 web/client/                 # ブラウザへ渡るもの全部。deno.ns 無しで型チェック
-  routes.ts                 # / /history /length
+  routes.ts                 # / /history /length /money
   layout.tsx                # 文書シェル（bare = ヘッダ無しの全画面ページ）
   pages/index.tsx           # トップ。JS 無し（旧 /#history 等のリダイレクト 1 行だけ）
-  pages/explorer.tsx        # Axis → PageModule。2 ページはこれ 1 つ
+  pages/explorer.tsx        # Axis → PageModule。3 ページはこれ 1 つ
   islands/explorer.tsx      # 本体の island
   lib/scale.ts              # YAML → Axis、座標、カード配置（純関数）
   lib/format.ts             # 億・万、光年/km/m… の表記
@@ -76,7 +78,14 @@ entries:
     description: …
   - ad: 1868 # 西暦。ビルド年からの「年前」に変換
     name: …
+  - exponent: 3 # money: 2,000円
+    value: 2
+    exact: true # 概数でないもの。ラベルの「約」を付けない
+    name: …
 ```
+
+`meta.id`（`history` / `length` / `money`）で表記が決まる（`lib/scale.ts` の
+`ScaleKind`）。お金の値は概算で、年度により変わる。
 
 `value: 0` は「現在」で軸の下端に固定（log 0 は −∞ のため）。
 

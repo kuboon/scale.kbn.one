@@ -105,3 +105,32 @@ Deno.test("swipeAxis waits out the slop, then picks a side", () => {
   // A diagonal goes to the browser: scrolling is the default.
   assertEquals(swipeAxis(10, 10), "scroll");
 });
+
+Deno.test("money labels drop 約 only for exact amounts", () => {
+  const axis = toAxis({
+    meta: {
+      id: "money",
+      title: "お金",
+      subtitle: "",
+      unit: "円",
+      unitSymbol: "円",
+      minExponent: 0,
+      maxExponent: 15,
+    },
+    entries: [
+      {
+        exponent: 3,
+        value: 2,
+        exact: true,
+        name: "2000円札",
+        nameEn: "",
+        description: "",
+      },
+      { exponent: 4, value: 4.5, name: "救急車", nameEn: "", description: "" },
+    ],
+  }, 2026);
+  assertEquals(axis.kind, "money");
+  assertEquals(axis.points.map((p) => p.label), ["約4.5万円", "2,000円"]);
+  assertEquals(axis.start, 4);
+  assertEquals(readout("money", 12), "約1兆円");
+});

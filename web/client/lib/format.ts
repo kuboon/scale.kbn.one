@@ -55,9 +55,13 @@ const COUNTERS: [number, string][] = [
 export function japaneseNumber(n: number): string | null {
   if (!(n > 0) || n >= 1e24) return null;
   for (const [size, name] of COUNTERS) {
-    if (n >= size) return `${sig(n / size)}${name}`;
+    if (n >= size) {
+      // `2,200兆` rather than `2200兆`: four digits read better with a separator.
+      const count = +(n / size).toPrecision(3);
+      return `${count >= 1000 ? count.toLocaleString("en-US") : count}${name}`;
+    }
   }
-  return n >= 1000 ? Math.round(n).toLocaleString("en-US") : sig(n);
+  return n >= 1000 ? (+n.toPrecision(3)).toLocaleString("en-US") : sig(n);
 }
 
 /** `m × 10ⁿ`, for magnitudes no unit or counter covers. */
@@ -112,4 +116,10 @@ export function length(meters: number): string {
     }
   }
   return `${scientific(meters)} m`;
+}
+
+/** An amount of money: `1.4兆円`, `8,000万円`, `3円`. */
+export function yen(amount: number): string {
+  const jp = japaneseNumber(amount);
+  return jp === null ? `${scientific(amount)}円` : `${jp}円`;
 }

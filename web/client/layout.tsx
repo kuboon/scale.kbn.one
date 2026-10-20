@@ -123,6 +123,7 @@ function Shell(handle: Handle<{ children: RemixNode }>) {
         <nav mix={navStyle}>
           <a href={routes.history.href()}>宇宙史</a>
           <a href={routes.length.href()}>長さ</a>
+          <a href={routes.money.href()}>お金</a>
         </nav>
       </header>
       <main mix={[bandStyle, mainStyle]}>{handle.props.children}</main>

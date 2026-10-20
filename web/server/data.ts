@@ -50,7 +50,8 @@ async function load(name: string): Promise<ScaleData> {
 /** The year `ad:` entries count back from. A static build is as old as its build. */
 const refYear = new Date().getFullYear();
 
-export const scales: Record<"history" | "length", Axis> = {
+export const scales: Record<"history" | "length" | "money", Axis> = {
   history: toAxis(await load("history"), refYear),
   length: toAxis(await load("length"), refYear),
+  money: toAxis(await load("money"), refYear),
 };

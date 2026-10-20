@@ -41,6 +41,14 @@ const SCALES = [
     from: 27,
     to: -35,
   },
+  {
+    href: routes.money.href(),
+    title: "お金のスケール",
+    range: "1円 → 2,200兆円",
+    blurb: "1円玉の製造費から、救急車・市や県の予算、国の借金まで 16 桁。",
+    from: 15,
+    to: 0,
+  },
 ];
 
 export default function Home(_handle: Handle) {
