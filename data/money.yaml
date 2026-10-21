@@ -50,19 +50,18 @@ entries:
     description: 1回855億円を、約1.03億人の有権者で割ると（2026年衆院選）
 
   - exponent: 3
-    value: 2
-    exact: true
-    name: 2000円札
-    nameEn: 2,000-Yen Note
-    description: 2000年発行。いまも有効だが、流通している紙幣のうち枚数で0.5%ほど
-
-  - exponent: 3
     value: 3
     name: 自動販売機1台の月の電気代
     nameEn: Monthly Electricity for a Vending Machine
     description: 冷やす・温めるで、1台あたり月2,000〜4,000円ほど
 
   # --- 1万円〜1億円 ---
+  - exponent: 3
+    value: 9.4
+    name: 最低賃金で1日働いた稼ぎ
+    nameEn: A Day's Pay at Minimum Wage
+    description: 2026年度の全国加重平均1,177円 × 8時間。東京（1,280円）なら約1万円
+
   - exponent: 4
     value: 1.7
     name: ごみ処理費（1人あたり年間）
@@ -159,7 +158,7 @@ entries:
     value: 6.5
     name: 東京スカイツリーの総事業費
     nameEn: Tokyo Skytree
-    description: 周辺の商業施設などを含めた総額（2012年開業）
+    description: 塔そのものの建設にかかった総額（2012年開業）。周辺の商業施設などを含めた東京スカイツリータウン全体では約1,430億円
 
   - exponent: 10
     value: 8.55

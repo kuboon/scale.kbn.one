@@ -227,6 +227,11 @@ entries:
     nameEn: Printing Press
     description: グーテンベルクの印刷革命（1440年頃）
 
+  - ad: 1590
+    name: 天下統一（信長から秀吉へ）
+    nameEn: Unification of Japan
+    description: 織田信長が進めたが1582年の本能寺の変で倒れ、豊臣秀吉が1590年に成し遂げた
+
   - exponent: 2
     value: 2.5
     name: 産業革命
