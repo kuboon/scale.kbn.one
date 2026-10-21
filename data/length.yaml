@@ -41,17 +41,23 @@ entries:
     description: オリオン星雲の大きさ
 
   - exponent: 16
+    value: 4.0
+    name: 一番近い恒星（プロキシマ・ケンタウリ）
+    nameEn: Proxima Centauri
+    description: 太陽の次に近い恒星までの距離。4.2光年。光でも4年以上かかる
+
+  - exponent: 16
     value: 3
     name: オールトの雲
     nameEn: Oort Cloud
     description: 太陽系をぐるりと包む、彗星のもとになる氷の天体の集まり。直径は約3光年と推定される
 
-  - exponent: 16
-    value: 9.5
+  - exponent: 15
+    value: 9.46
     name: 1光年
     priority: 1
     nameEn: Light Year
-    description: 光が1年間に進む距離。最も近い恒星は4.2光年
+    description: 光が1年間に進む距離。約9.5兆km
 
   - exponent: 13
     value: 9
