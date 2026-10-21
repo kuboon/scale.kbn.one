@@ -28,12 +28,13 @@ export function parseScale(source: string, file: string): ScaleData {
     const ok = typeof entry.name === "string" &&
       (typeof entry.ad === "number" ||
         (typeof entry.value === "number" &&
-          typeof entry.exponent === "number"));
+          typeof entry.exponent === "number")) &&
+      (entry.priority === undefined || typeof entry.priority === "number");
     if (!ok) {
       throw new Error(
         `${file}: entry ${
           JSON.stringify(entry.name)
-        } needs ad, or value and exponent`,
+        } needs ad, or value and exponent (and a numeric priority, if any)`,
       );
     }
     entry.description ??= "";

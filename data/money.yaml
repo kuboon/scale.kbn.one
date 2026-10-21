@@ -14,6 +14,7 @@ entries:
   - exponent: 0
     value: 3
     name: 1円玉1枚をつくる費用
+    priority: 1
     nameEn: Cost to Mint a 1-Yen Coin
     description: 額面より製造費のほうが高い。公式発表はないが2〜3円とされる
 
@@ -26,6 +27,7 @@ entries:
   - exponent: 2
     value: 1.5
     name: 宝くじ1枚（300円）の期待値
+    priority: 1
     nameEn: Expected Value of a 300-Yen Lottery Ticket
     description: 賞金に回るのは売上の約半分まで（法律で5割が上限）
 
@@ -83,12 +85,14 @@ entries:
     value: 1
     exact: true
     name: 札束ひとつ
+    priority: 1
     nameEn: A Bundle of Banknotes
     description: 1万円札100枚。重さ約100g、厚さ約1cm
 
   - exponent: 6
     value: 4.78
     name: 平均年収
+    priority: 1
     nameEn: Average Annual Salary
     description: 1年を通じて働いた給与所得者の平均（2024年分、国税庁）
 
@@ -115,6 +119,7 @@ entries:
     value: 1
     exact: true
     name: 1億円の重さ
+    priority: 1
     nameEn: The Weight of 100 Million Yen
     description: 1万円札1枚が約1gなので、1億円で約10kg
 
@@ -127,6 +132,7 @@ entries:
   - exponent: 8
     value: 2.9
     name: 生涯賃金
+    priority: 1
     nameEn: Lifetime Earnings
     description: 大卒男性が同じ会社で60歳まで働いた場合（退職金を除く）。女性は約2.4億円
 
@@ -164,6 +170,7 @@ entries:
   - exponent: 11
     value: 1.05
     name: 大谷翔平の契約（10年総額）
+    priority: 1
     nameEn: Shohei Ohtani's Contract
     description: 2023年、ドジャースと7億ドルで契約（1ドル150円で換算）
 
@@ -207,12 +214,14 @@ entries:
   - exponent: 12
     value: 9.04
     name: 防衛費（年間）
+    priority: 1
     nameEn: Defense Budget
     description: 2026年度当初予算
 
   - exponent: 12
     value: 9.65
     name: 東京都の年間予算
+    priority: 1
     nameEn: Tokyo Metropolitan Annual Budget
     description: 一般会計（2026年度）。鳥取県の約24倍
 
@@ -249,6 +258,7 @@ entries:
   - exponent: 13
     value: 8.42
     name: 国の税収（年間）
+    priority: 1
     nameEn: National Tax Revenue
     description: 所得税・消費税・法人税など（2025年度決算）
 
@@ -286,6 +296,7 @@ entries:
   - exponent: 14
     value: 1.22
     name: 国の一般会計予算（年間）
+    priority: 1
     nameEn: National General Account Budget
     description: 2026年度当初予算。歳出の約3分の1が社会保障
 
@@ -310,23 +321,27 @@ entries:
   - exponent: 14
     value: 6.73
     name: 日本のGDP
+    priority: 1
     nameEn: Japan's GDP
     description: 国内で1年間に生み出された付加価値の合計（名目、2025年度）
 
   - exponent: 15
     value: 1.11
     name: アメリカ連邦政府の歳出（年間）
+    priority: 1
     nameEn: US Federal Outlays
     description: 年金・医療保険の給付を含む総額。日本の一般会計の約9倍（2025年度実績、1ドル158円）
 
   - exponent: 15
     value: 1.15
     name: 普通国債の残高
+    priority: 1
     nameEn: Outstanding Government Bonds
     description: 税金で返していく国の借金。GDPの約1.7倍（2026年度末見込み）
 
   - exponent: 15
     value: 2.52
     name: 日本中の家計が持つお金（合計）
+    priority: 1
     nameEn: Household Financial Assets
     description: 全世帯の現金・預貯金・株式・投資信託・保険・年金を足したもの。1人あたり約2,000万円（2026年6月末、日銀）
