@@ -42,9 +42,9 @@ entries:
 
   - exponent: 16
     value: 4.0
-    name: 一番近い恒星（プロキシマ・ケンタウリ）
+    name: 太陽系の外で一番近い恒星
     nameEn: Proxima Centauri
-    description: 太陽の次に近い恒星までの距離。4.2光年。光でも4年以上かかる
+    description: プロキシマ・ケンタウリまで4.2光年。光でも4年以上かかる
 
   - exponent: 16
     value: 3
