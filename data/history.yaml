@@ -187,13 +187,13 @@ entries:
   - exponent: 3
     value: 5
     name: 文字の発明
+    priority: 1
     nameEn: Invention of Writing
     description: メソポタミアの楔形文字、歴史時代の始まり
 
   - exponent: 3
     value: 4.5
     name: ピラミッド建設
-    priority: 1
     nameEn: Great Pyramids Built
     description: 古代エジプト文明の象徴
 

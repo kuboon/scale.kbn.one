@@ -118,10 +118,10 @@ entries:
   - exponent: 8
     value: 1
     exact: true
-    name: 1億円の重さ
+    name: 札束100セット
     priority: 1
-    nameEn: The Weight of 100 Million Yen
-    description: 1万円札1枚が約1gなので、1億円で約10kg
+    nameEn: 100 Bundles of Cash
+    description: ドラマでよく見るジュラルミンケース、中身は約10kg
 
   - exponent: 8
     value: 2.2
