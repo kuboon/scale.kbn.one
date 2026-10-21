@@ -11,18 +11,21 @@ entries:
   - exponent: 10
     value: 1.38
     name: ビッグバン
+    priority: 1
     nameEn: Big Bang
     description: 宇宙の誕生、時間と空間の始まり
 
   - exponent: 9
     value: 4.5
     name: 太陽系、地球、月の誕生
+    priority: 1
     nameEn: Birth of the Solar System
     description: ガス雲の収縮から太陽と惑星が形成
 
   - exponent: 9
     value: 4
     name: 最初の生命
+    priority: 1
     nameEn: First Life
     description: 海底の熱水噴出孔付近で原始的な微生物が誕生
 
@@ -53,6 +56,7 @@ entries:
   - exponent: 8
     value: 5.4
     name: カンブリア爆発
+    priority: 1
     nameEn: Cambrian Explosion
     description: 多様な動物門が一斉に出現した生命の大爆発
 
@@ -83,6 +87,7 @@ entries:
   - exponent: 8
     value: 2.3
     name: 恐竜の時代の始まり
+    priority: 1
     nameEn: Age of Dinosaurs Begins
     description: 三畳紀に恐竜が出現
 
@@ -107,6 +112,7 @@ entries:
   - exponent: 7
     value: 6.6
     name: 恐竜の絶滅
+    priority: 1
     nameEn: Dinosaur Extinction
     description: 小惑星衝突による大量絶滅（K-Pg境界）
 
@@ -155,6 +161,7 @@ entries:
   - exponent: 5
     value: 3
     name: ホモ・サピエンスの誕生
+    priority: 1
     nameEn: Homo Sapiens
     description: 現生人類がアフリカで誕生
 
@@ -173,6 +180,7 @@ entries:
   - exponent: 4
     value: 1
     name: 農業革命
+    priority: 1
     nameEn: Agricultural Revolution
     description: 作物の栽培と家畜の飼育が始まり定住生活へ
 
@@ -185,6 +193,7 @@ entries:
   - exponent: 3
     value: 4.5
     name: ピラミッド建設
+    priority: 1
     nameEn: Great Pyramids Built
     description: 古代エジプト文明の象徴
 
@@ -221,11 +230,13 @@ entries:
   - exponent: 2
     value: 2.5
     name: 産業革命
+    priority: 1
     nameEn: Industrial Revolution
     description: 蒸気機関が社会を根本から変革（1770年代）
 
   - ad: 1868
     name: 明治維新・明治元年
+    priority: 1
     nameEn: Meiji Restoration / Meiji Era Begins
     description: 明治天皇の即位により明治時代が始まり、日本は封建制度から近代国家へ歩み出す
 
@@ -258,6 +269,7 @@ entries:
 
   - ad: 1945
     name: 第二次世界大戦 終戦
+    priority: 1
     nameEn: End of World War II
     description: 1945年8月15日の玉音放送により日本が降伏、第二次世界大戦が終結
 
@@ -270,12 +282,14 @@ entries:
   - exponent: 1
     value: 5.5
     name: 月面着陸
+    priority: 1
     nameEn: Moon Landing
     description: アポロ11号が人類初の月面着陸（1969年）
 
   - exponent: 1
     value: 3
     name: インターネットの普及
+    priority: 1
     nameEn: Rise of the Internet
     description: World Wide Webが一般に普及（1990年代）
 
@@ -292,6 +306,7 @@ entries:
   - exponent: 1
     value: 1.5
     name: スマートフォンの時代
+    priority: 1
     nameEn: Smartphone Era
     description: iPhone登場以降、世界がモバイルに（2007年〜）
 

@@ -68,6 +68,7 @@ export const Explorer = clientEntry(
   function Explorer(handle: Handle<ExplorerProps>) {
     const axis = handle.props.axis;
     const { hi, lo, kind, points } = axis;
+    const priorities = points.map((p) => p.priority);
     const span = hi - lo;
 
     const decades: number[] = [];
@@ -136,6 +137,7 @@ export const Explorer = clientEntry(
 
         const anchors = points.map((p) => y(p.log));
         const slots = placeCards(anchors, heights, {
+          priorities,
           maxShift: Math.max(24, Math.min(decadePx * 0.35, 64)),
         });
         slots.forEach((slot, i) => {

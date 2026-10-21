@@ -79,6 +79,30 @@ Deno.test("placeCards pushes, then drops what would drift too far", () => {
   assertEquals(slots[1].top, 119);
 });
 
+Deno.test("placeCards keeps the higher priority, sliding the other out of its way", () => {
+  // Equal priorities: the upper card wins.
+  assertEquals(
+    placeCards([100, 105], [30, 30], { maxShift: 20 }).map((s) => s.visible),
+    [true, false],
+  );
+  const slots = placeCards([100, 105], [30, 30], {
+    maxShift: 20,
+    priorities: [0, 1],
+  });
+  assertEquals(slots.map((s) => s.visible), [false, true]);
+  assertEquals(slots[1].top, 90);
+  // With room to spare the lower-priority card slides up rather than vanishing.
+  const roomy = placeCards([100, 105], [30, 30], { priorities: [0, 1] });
+  assertEquals(roomy.map((s) => s.visible), [true, true]);
+  assertEquals(roomy[0].top, 56);
+  // A dropped important card doesn't hand its spot to a lesser neighbour.
+  const crowded = placeCards([100, 110, 120], [30, 30, 30], {
+    maxShift: 20,
+    priorities: [1, 1, 0],
+  });
+  assertEquals(crowded.map((s) => s.visible), [true, false, false]);
+});
+
 Deno.test("placeCards always shows the pinned card", () => {
   const slots = placeCards([100, 105, 110], [30, 30, 30], { pinned: 2 });
   assert(slots[2].visible);
@@ -126,11 +150,19 @@ Deno.test("money labels drop 約 only for exact amounts", () => {
         nameEn: "",
         description: "",
       },
-      { exponent: 4, value: 4.5, name: "救急車", nameEn: "", description: "" },
+      {
+        exponent: 4,
+        value: 4.5,
+        priority: 1,
+        name: "救急車",
+        nameEn: "",
+        description: "",
+      },
     ],
   }, 2026);
   assertEquals(axis.kind, "money");
   assertEquals(axis.points.map((p) => p.label), ["約4.5万円", "2,000円"]);
+  assertEquals(axis.points.map((p) => p.priority), [1, 0]);
   assertEquals(axis.start, 4);
   assertEquals(readout("money", 12), "約1兆円");
 });

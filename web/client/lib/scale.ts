@@ -33,6 +33,8 @@ export interface ScaleEntry {
   description: string;
   /** The amount is exact (a 2,000円 note, a 10億円 jackpot), so its label drops the "約". */
   exact?: boolean;
+  /** Which card survives a collision: higher wins. Defaults to 0. */
+  priority?: number;
 }
 
 export interface ScaleData {
@@ -52,6 +54,8 @@ export interface Point {
   name: string;
   nameEn: string;
   description: string;
+  /** Higher keeps its card when cards collide. */
+  priority: number;
   // The island's props have to be serializable, which is an index signature.
   [key: string]: string | number;
 }
@@ -110,6 +114,7 @@ export function toAxis(data: ScaleData, refYear: number): Axis {
       name: entry.name,
       nameEn: entry.nameEn,
       description: entry.description,
+      priority: entry.priority ?? 0,
     };
   }).sort((a, b) => b.log - a.log);
 
@@ -216,10 +221,13 @@ export interface Slot {
 /**
  * Places cards beside their anchors without overlapping.
  *
- * Greedy, top to bottom: each card wants to be centred on its anchor, is pushed down below the one
- * above it, and is dropped (left as a bare dot on the axis) when that push would carry it more than
- * `maxShift` from where it belongs. Zooming out drops cards; zooming in brings them back — the
- * label density follows the zoom, and no card ever floats far from the thing it names.
+ * Greedy, most important first: each card wants to be centred on its anchor, may slide up or down
+ * into the gap between the cards already placed above and below it, and is dropped (left as a bare
+ * dot on the axis) when that would carry it more than `maxShift` from where it belongs. Cards never
+ * swap order, so leaders never cross. Zooming out drops cards — the least important first —
+ * and zooming in brings them back; no card ever floats far from the thing it names.
+ *
+ * With equal priorities this is the plain top-to-bottom push: the upper card wins.
  *
  * `pinned`, when set, is placed first and always shown: the entry under the reticle.
  *
@@ -229,41 +237,50 @@ export interface Slot {
 export function placeCards(
   anchors: readonly number[],
   heights: readonly number[],
-  { gap = 4, maxShift = 40, pinned = -1 }: {
+  { gap = 4, maxShift = 40, pinned = -1, priorities = [] }: {
     gap?: number;
     maxShift?: number;
     pinned?: number;
+    /** Higher goes first; missing counts as 0. */
+    priorities?: readonly number[];
   } = {},
 ): Slot[] {
+  const n = anchors.length;
   const slots: Slot[] = anchors.map((a, i) => ({
     top: a - heights[i] / 2,
     visible: false,
   }));
-  const taken: [number, number][] = [];
-  const overlaps = (top: number, h: number) =>
-    taken.some(([t, b]) => top < b + gap && top + h + gap > t);
+  const rank = (i: number) => i === pinned ? Infinity : priorities[i] ?? 0;
+  // Stable: equal priorities keep top-to-bottom order.
+  const order = [...anchors.keys()].sort((a, b) => rank(b) - rank(a) || a - b);
+  const dropped: [top: number, bottom: number, rank: number][] = [];
 
-  if (pinned >= 0 && pinned < anchors.length) {
-    slots[pinned].visible = true;
-    taken.push([slots[pinned].top, slots[pinned].top + heights[pinned]]);
-  }
-
-  let cursor = -Infinity;
-  for (let i = 0; i < anchors.length; i++) {
-    if (i === pinned) {
-      cursor = Math.max(cursor, slots[i].top + heights[i]);
-      continue;
+  for (const i of order) {
+    // The gap between the nearest placed cards above and below this one.
+    let floor = -Infinity;
+    for (let j = i - 1; j >= 0; j--) {
+      if (slots[j].visible) {
+        floor = slots[j].top + heights[j] + gap;
+        break;
+      }
     }
-    const want = anchors[i] - heights[i] / 2;
-    let top = Math.max(want, cursor + gap);
-    // Hop over the pinned card if it sits in the way.
-    for (const [t, b] of taken) {
-      if (top < b + gap && top + heights[i] + gap > t) top = b + gap;
+    let ceiling = Infinity;
+    for (let j = i + 1; j < n; j++) {
+      if (slots[j].visible) {
+        ceiling = slots[j].top - gap;
+        break;
+      }
     }
-    if (top - want > maxShift || overlaps(top, heights[i])) continue;
-    slots[i] = { top, visible: true };
-    taken.push([top, top + heights[i]]);
-    cursor = top + heights[i];
+    const want = slots[i].top;
+    const top = Math.max(floor, Math.min(want, ceiling - heights[i]));
+    const fits = top + heights[i] <= ceiling &&
+      Math.abs(top - want) <= maxShift &&
+      // A more important card that didn't fit keeps its spot empty rather than ceding it.
+      !dropped.some(([t, b, r]) =>
+        r > rank(i) && top < b + gap && top + heights[i] + gap > t
+      );
+    if (fits || i === pinned) slots[i] = { top, visible: true };
+    else dropped.push([want, want + heights[i], rank(i)]);
   }
   return slots;
 }

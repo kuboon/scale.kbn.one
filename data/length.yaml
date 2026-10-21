@@ -11,6 +11,7 @@ entries:
   - exponent: 27
     value: 8.8
     name: 観測可能な宇宙
+    priority: 1
     nameEn: Observable Universe
     description: 観測可能な宇宙の直径
 
@@ -29,6 +30,7 @@ entries:
   - exponent: 21
     value: 9.5
     name: 天の川銀河
+    priority: 1
     nameEn: Milky Way Galaxy
     description: 天の川銀河の直径
 
@@ -47,6 +49,7 @@ entries:
   - exponent: 16
     value: 9.5
     name: 1光年
+    priority: 1
     nameEn: Light Year
     description: 光が1年間に進む距離。最も近い恒星は4.2光年
 
@@ -65,6 +68,7 @@ entries:
   - exponent: 11
     value: 1.5
     name: 地球-太陽間距離
+    priority: 1
     nameEn: Earth-Sun Distance
     description: 1天文単位。光が8分で届く
 
@@ -77,12 +81,14 @@ entries:
   - exponent: 8
     value: 3.8
     name: 地球-月間距離
+    priority: 1
     nameEn: Earth-Moon Distance
     description: 月までの平均距離。光が1.3秒で届く
 
   - exponent: 7
     value: 1.3
     name: 地球の直径
+    priority: 1
     nameEn: Earth's Diameter
     description: 地球の直径
 
@@ -95,6 +101,7 @@ entries:
   - exponent: 5
     value: 2.5
     name: 日本列島の幅
+    priority: 1
     nameEn: Width of Japan
     description: 本州の幅
 
@@ -107,6 +114,7 @@ entries:
   - exponent: 3
     value: 3.776
     name: 山
+    priority: 1
     nameEn: Mountain
     description: 富士山の標高。深海の深さ
 
@@ -125,6 +133,7 @@ entries:
   - exponent: 0
     value: 1
     name: 人間の腕の長さ
+    priority: 1
     nameEn: Human Arm Length
     description: 人間の腕の長さ。ギターの全長
 
@@ -137,6 +146,7 @@ entries:
   - exponent: -2
     value: 2
     name: 1円玉
+    priority: 1
     nameEn: One Yen Coin
     description: 1円玉の直径。指先の幅
 
@@ -149,6 +159,7 @@ entries:
   - exponent: -4
     value: 0.7
     name: 髪の毛の太さ
+    priority: 1
     nameEn: Human Hair Width
     description: 人間の髪の毛の直径。肉眼で見える限界付近
 
@@ -161,6 +172,7 @@ entries:
   - exponent: -6
     value: 2
     name: 細菌
+    priority: 1
     nameEn: Bacteria
     description: 大腸菌の大きさ。光学顕微鏡で見える限界
 
@@ -173,6 +185,7 @@ entries:
   - exponent: -8
     value: 10
     name: ウイルス
+    priority: 1
     nameEn: Virus
     description: インフルエンザウイルスの大きさ
 
@@ -185,6 +198,7 @@ entries:
   - exponent: -10
     value: 1
     name: 原子
+    priority: 1
     nameEn: Atom
     description: 水素原子の直径。物質の基本単位
 
@@ -197,6 +211,7 @@ entries:
   - exponent: -15
     value: 1
     name: 陽子の直径
+    priority: 1
     nameEn: Proton Diameter
     description: 原子核を構成する陽子の大きさ
 
@@ -209,5 +224,6 @@ entries:
   - exponent: -35
     value: 1.6
     name: プランク長
+    priority: 1
     nameEn: Planck Length
     description: 物理学で意味を持つ最小の長さ
