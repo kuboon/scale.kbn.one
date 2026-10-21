@@ -118,10 +118,10 @@ entries:
   - exponent: 8
     value: 1
     exact: true
-    name: 現金10kg
+    name: 札束100セット
     priority: 1
-    nameEn: 10 kg of Cash
-    description: ドラマでよく見る札束（1万円札100枚）を100セット。1万円札は1枚約1gなので、1億円で約10kg
+    nameEn: 100 Bundles of Cash
+    description: ドラマでよく見るジュラルミンケース、中身は約10kg
 
   - exponent: 8
     value: 2.2
